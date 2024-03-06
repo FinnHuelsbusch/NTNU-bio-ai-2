@@ -2,9 +2,10 @@ use serde::Deserialize;
 
 
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Copy)]
 pub struct Patient {
-    pub demand: u8,
+    pub id: u8,
+    pub demand: u32,
     pub start_time: u32,
     pub end_time: u32,
     pub care_time: u32,
