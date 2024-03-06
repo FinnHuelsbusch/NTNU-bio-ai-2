@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FunctionConfig {
@@ -20,13 +20,13 @@ pub struct FunctionConfig {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
     pub problem_instance: String,
-    pub population_size: u64,
-    pub number_of_generations: u64,
+    pub population_initialisation: String,
+    pub population_size: usize,
+    pub number_of_generations: usize,
     pub parent_selection: FunctionConfig,
     pub crossovers: Vec<FunctionConfig>,
     pub mutations: Vec<FunctionConfig>,
-    pub survivor_selection: FunctionConfig
-    
+    pub survivor_selection: FunctionConfig,
 }
 
 pub fn initialize_config(file_path: &str) -> Config {

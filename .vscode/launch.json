@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'bio-ai-2'",
+      "cargo": {
+        "args": ["build", "--bin=bio-ai-2", "--package=bio-ai-2"],
+        "filter": {
+          "name": "bio-ai-2",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'bio-ai-2'",
+      "cargo": {
+        "args": ["test", "--no-run", "--bin=bio-ai-2", "--package=bio-ai-2"],
+        "filter": {
+          "name": "bio-ai-2",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
