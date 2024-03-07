@@ -28,13 +28,13 @@ pub fn get_average_fitness(population: &Population) -> f64 {
 
 fn initialize_random_population(problem_instance: &ProblemInstance, config: &Config) -> Population {
     let mut population = Vec::with_capacity(config.population_size);
-
+    let mut rng = rand::thread_rng();
     for _ in 0..config.population_size {
         let patient_ids: Vec<usize> = problem_instance.patients.keys().copied().collect();
         let mut genome: Genome = vec![Vec::new(); problem_instance.number_of_nurses];
 
         for &patient_id in patient_ids.iter() {
-            let random_index = thread_rng().gen_range(0..problem_instance.number_of_nurses);
+            let random_index = rng.gen_range(0..problem_instance.number_of_nurses);
             genome[random_index].push(patient_id);
         }
 

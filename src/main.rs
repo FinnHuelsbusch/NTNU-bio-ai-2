@@ -10,6 +10,7 @@ mod individual;
 mod population;
 mod genetic_algorithm;
 mod selection_functions;
+mod crossover_functions;
 
 fn main() {
     // Load config

@@ -25,6 +25,18 @@ impl Ord for Individual {
 }
 impl Eq for Individual {}
 
+impl Individual {
+    pub fn new(genome: Genome) -> Self {
+        return Individual {
+            genome: genome,
+            fitness: 0.0,
+            missing_care_time_penalty: 0.0,
+            capacity_penalty: 0.0,
+            to_late_to_depot_penality: 0.0,
+        };
+    }
+}
+
 pub fn is_journey_valid(journey: &Journey, problem_instance: &ProblemInstance) -> bool {
     if journey.is_empty() {
         return true;
@@ -150,4 +162,18 @@ pub fn calculate_fitness(individual: &mut Individual, problem_instance: &Problem
     individual.missing_care_time_penalty = missing_care_time_penalty;
     individual.capacity_penalty = capacity_penalty;
     individual.to_late_to_depot_penality = to_late_to_depot_penality;
+}
+
+pub fn unflattened_genome(flattend_genome: &Journey, genome_original_structure: &Genome) -> Genome {
+    let mut result: Genome = vec![Vec::new(); genome_original_structure.len()];
+
+    let mut flattened_index: usize = 0;
+    for (outer_index, original_journey) in genome_original_structure.into_iter().enumerate() {
+        for _ in 0..original_journey.len() {
+            result[outer_index].push(flattend_genome[flattened_index]);
+            flattened_index += 1;
+        }
+    }
+
+    result
 }

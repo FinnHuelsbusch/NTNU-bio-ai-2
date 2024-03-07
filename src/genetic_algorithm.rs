@@ -1,7 +1,7 @@
 use crate::{
     config::Config,
-    individual,
-    population::{ self, get_average_fitness, initialize_population, Population },
+    crossover_functions::crossover,
+    population::{ get_average_fitness, initialize_population, Population },
     problem_instance::ProblemInstance,
     selection_functions::parent_selection,
 };
@@ -98,9 +98,11 @@ pub fn run_genetic_algorithm_instance(problem_instance: &ProblemInstance, config
     for generation in 0..config.number_of_generations {
         println!("Calculating Generation: {:?}", generation);
 
-        let parents = parent_selection(&population, config);
+        let mut parents = parent_selection(&population, config);
 
-        population = parents;
+        let mut children = crossover(&mut parents, problem_instance, config);
+
+        population = children;
 
         log_population_statistics(&population);
     }
