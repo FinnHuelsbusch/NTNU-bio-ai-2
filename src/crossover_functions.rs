@@ -58,88 +58,7 @@ fn order_one_rossover (genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<
     );
 }
 
-/*
-auto partiallyMappedCrossover(const Genome &parent1, const Genome &parent2) -> std::pair<Genome, std::optional<Genome>>
-{
-    std::vector<int> parent1Flat = flattenGenome(parent1);
-    std::vector<int> parent2Flat = flattenGenome(parent2);
 
-    RandomGenerator& rng = RandomGenerator::getInstance();
-    std::size_t start = rng.generateRandomInt(0, parent1Flat.size() - 1);
-    std::size_t end = rng.generateRandomInt(0, parent1Flat.size() - 1);
-    if (start > end) {
-        std::swap(start, end);
-    }
-    std::vector<int> child1Flat = std::vector<int>(parent1Flat.size(), -1);
-    std::vector<int> child2Flat = std::vector<int>(parent2Flat.size(), -1);
-
-    // copy the selected part from parent1 to child1 and the selected part from parent2 to child2
-    std::vector<int> previousIndices;
-    for (int i = start; i <= end; i++) {
-        child1Flat[i] = parent1Flat[i];
-        child2Flat[i] = parent2Flat[i];
-    }
-
-    for (int i = start; i <= end; i++) {
-        int index = i; 
-        previousIndices.clear();
-        // check if the value is already in the selected part
-        if (std::find(child1Flat.begin(), child1Flat.end(), parent2Flat[i]) != child1Flat.end()) {          
-            // the value is already in the selected part
-            continue;
-        }
-        do {
-            previousIndices.push_back(index);
-            auto iterator = std::find(parent2Flat.begin(), parent2Flat.end(), parent1Flat[index]);
-            index = iterator - parent2Flat.begin();
-        } while ((start <= index && index <= end && std::find(previousIndices.begin(), previousIndices.end(), index) == previousIndices.end()) || child1Flat[index] != -1);
-        
-        child1Flat[index] = parent2Flat[i];
-    }
-
-    for (int i = start; i <= end; i++) {
-        
-        int index = i;
-        previousIndices.clear();
-        if (std::find(child2Flat.begin(), child2Flat.end(), parent1Flat[i]) != child2Flat.end()) {
-            continue;
-        }
-        do {
-            previousIndices.push_back(index);
-            auto iterator = std::find(parent1Flat.begin(), parent1Flat.end(), parent2Flat[index]);
-            index = iterator - parent1Flat.begin();
-        } while ((start <= index && index <= end && std::find(previousIndices.begin(), previousIndices.end(), index) == previousIndices.end()) || child2Flat[index] != -1);
-        child2Flat[index] = parent1Flat[i];
-        
-    }
-
-    // fill the rest of the child with the remaining genes from the other parent
-    for (int i = 1; i < parent1Flat.size(); i++) {
-        int index = (i + end) % parent1Flat.size();
-        // check if the value is undefined
-        if (child1Flat[index] == -1) {
-            int targetIndex = index; 
-            while (std::find(child1Flat.begin(), child1Flat.end(), parent2Flat[targetIndex]) != child1Flat.end()) {
-                targetIndex = (targetIndex + 1) % parent1Flat.size();
-            }
-            child1Flat[index] = parent2Flat[targetIndex];
-        }
-
-        if (child2Flat[index] == -1) {
-            int targetIndex = index; 
-            while (std::find(child2Flat.begin(), child2Flat.end(), parent1Flat[targetIndex]) != child2Flat.end()) {
-                targetIndex = (targetIndex + 1) % parent2Flat.size();
-            }
-            child2Flat[index] = parent1Flat[targetIndex];
-        }
-    }
-
-    Genome child1 = unflattenGenome(child1Flat, parent1); 
-    Genome child2 = unflattenGenome(child2Flat, parent2);
-    return std::make_pair(child1, child2);
-}
-
-*/
 
 fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
     let genome_flattend_a: Vec<&usize> = genome_a.iter().flatten().collect();
@@ -159,8 +78,8 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
         (start, end)
     };
 
-    let mut child_a: Vec<usize> = vec![0; genome_length];
-    let mut child_b: Vec<usize> = vec![0; genome_length];
+    let mut child_a: Vec<usize> = vec![usize::MAX; genome_length];
+    let mut child_b: Vec<usize> = vec![usize::MAX; genome_length];
 
     // copy the selected part from parent1 to child1 and the selected part from parent2 to child2
     for i in start..=end {
@@ -168,11 +87,11 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
         child_b[i] = *genome_flattend_b[i];
     }
 
-    let number_of_non_selected_elements = genome_length - (end - start);
     for (child, parent, other_parent) in &mut [
         (&mut child_a, &genome_flattend_a, &genome_flattend_b),
         (&mut child_b, &genome_flattend_b, &genome_flattend_a)
     ] {
+        // 
         for i in start..=end {
             if child.contains(&other_parent.iter().nth(i).unwrap()) {
                 continue;
@@ -184,7 +103,7 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
                     index_to_insert = other_parent.iter().position(|&x| x == parent[index_to_insert]).unwrap();
                     if (index_to_insert < start && index_to_insert > end) // index outside of selected range
                         && !!!previous_indices.contains(&index_to_insert) // index not already used -> no cycle
-                        && child[index_to_insert] == 0 // location is not already used in child
+                        && child[index_to_insert] == usize::MAX // location is not already used in child
                     {
                         child[index_to_insert] = *other_parent[i];
                         break;
@@ -193,6 +112,21 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
                 
             }
         }
+
+        // fill the rest of the child with the elements from the other parent
+        for i in 0..genome_length {
+            let mut insert_index = (i + end + 1) % genome_length;
+            while child[insert_index] != usize::MAX {
+                insert_index = (insert_index + 1) % genome_length;
+            }
+            let mut source_index = (i + end + 1) % genome_length;
+            while child.contains(&other_parent.iter().nth(source_index).unwrap()) {
+                source_index = (source_index + 1) % genome_length;
+            }
+            child[insert_index] = **other_parent.iter().nth(source_index).unwrap(); 
+        }
+
+
     }
 
     return (
@@ -200,77 +134,6 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
         Some(unflattened_genome(&child_b, genome_b))
     );
 }
-
-/*
-auto edgeRecombination(const Genome &parent1, const Genome &parent2) -> std::pair<Genome, std::optional<Genome>>
-{
-    std::vector<int> parent1Flat = flattenGenome(parent1);
-    std::vector<int> parent2Flat = flattenGenome(parent2);
-    // assert that the genomes have the same length
-    assert(parent1Flat.size() == parent2Flat.size());
-
-    std::map<int, std::vector<int>> adjacencyList;
-    for (int patientID : parent1Flat)
-    {
-        adjacencyList[patientID] = std::vector<int>();
-    }
-    for (int i = 0; i < parent1Flat.size(); i++) {
-        int left = (i - 1 + parent1Flat.size()) % parent1Flat.size();
-        int right = (i + 1) % parent1Flat.size();
-        adjacencyList[parent1Flat[i]].push_back(parent1Flat[left]);
-        adjacencyList[parent1Flat[i]].push_back(parent1Flat[right]);
-        adjacencyList[parent2Flat[i]].push_back(parent2Flat[left]);
-        adjacencyList[parent2Flat[i]].push_back(parent2Flat[right]);
-    }
-
-    RandomGenerator& rng = RandomGenerator::getInstance();
-    std::vector<int> child;
-    int current = parent1Flat[rng.generateRandomInt(0, parent1Flat.size() - 1)];
-    for (int i = 0; i < parent1Flat.size(); i++) {
-        child.push_back(current);
-        for (auto& [key, value] : adjacencyList) {
-            value.erase(std::remove(value.begin(), value.end(), current), value.end());
-        }
-        
-        //Examine list for current element:
-            // – If there is a common edge, pick that to be next element
-            // – Otherwise pick the entry in the list which itself has the shortest list
-            // – Ties are split at random
-        int newCurrent = INT_MAX;
-        std::set<int> seen = std::set<int>();
-        for (int value : adjacencyList[current]) {
-            if (seen.contains(value)) {
-                newCurrent = value;
-                break;
-            }
-            seen.insert(value);
-        }
-
-        // choice of new current is not random if there are two list of equal length. 
-        if (newCurrent == INT_MAX) {
-            int minSize = INT_MAX;
-            for (int key : adjacencyList[current]) {
-                std::set<int> valueSet = std::set<int>(adjacencyList[key].begin(), adjacencyList[key].end());
-                if (valueSet.size() <= minSize) {
-                    minSize = valueSet.size();
-                    newCurrent = key;
-                }
-            }
-        }
-        adjacencyList.erase(current);
-        if (adjacencyList.empty()) {
-            break;
-        }
-        if (newCurrent == INT_MAX) {
-            do{
-                newCurrent = parent1Flat[rng.generateRandomInt(0, parent1Flat.size() - 1)];
-            } while (adjacencyList.find(newCurrent) == adjacencyList.end());
-        }
-        current = newCurrent;
-    }
-    return std::make_pair(unflattenGenome(child, parent1), std::nullopt);
-}
- */
 
 fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
     // Flatten genomes into 1d vector
