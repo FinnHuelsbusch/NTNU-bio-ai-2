@@ -15,6 +15,9 @@ pub struct FunctionConfig {
 
     #[serde(default)]
     pub elitism_percentage: Option<f64>,
+
+    #[serde(default)]
+    pub combine_parents_and_offspring: Option<bool>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
