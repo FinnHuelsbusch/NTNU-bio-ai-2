@@ -36,12 +36,12 @@ fn order_one_rossover (genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<
         child_b[i] = *genome_flattend_b[i];
     }
 
+    let number_of_non_selected_elements = genome_length - (end - start);
     for (child, parent, other_parent) in &mut [
         (&mut child_a, genome_a, genome_b),
         (&mut child_b, genome_b, genome_a),
     ] {
-        let number_of_non_selected_elements = genome_length - (end - start);
-
+        
         for i in 0..number_of_non_selected_elements {
             let source_index = (end + i) % genome_length;
             let mut target_index = source_index;
@@ -139,6 +139,69 @@ auto partiallyMappedCrossover(const Genome &parent1, const Genome &parent2) -> s
     return std::make_pair(child1, child2);
 }
 
+*/
+
+fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
+    let genome_flattend_a: Vec<&usize> = genome_a.iter().flatten().collect();
+    let genome_flattend_b: Vec<&usize> = genome_b.iter().flatten().collect();
+
+
+    assert_eq!(genome_flattend_a.len(), genome_flattend_b.len());
+    let genome_length: usize = genome_flattend_a.len();
+
+    let mut rng = rand::thread_rng();
+    let start: usize = rng.gen_range(0..genome_length);
+    let end: usize = rng.gen_range(0..genome_length);
+
+    let (start, end) = if start > end {
+        (end, start)
+    } else {
+        (start, end)
+    };
+
+    let mut child_a: Vec<usize> = vec![0; genome_length];
+    let mut child_b: Vec<usize> = vec![0; genome_length];
+
+    // copy the selected part from parent1 to child1 and the selected part from parent2 to child2
+    for i in start..=end {
+        child_a[i] = *genome_flattend_a[i];
+        child_b[i] = *genome_flattend_b[i];
+    }
+
+    let number_of_non_selected_elements = genome_length - (end - start);
+    for (child, parent, other_parent) in &mut [
+        (&mut child_a, &genome_flattend_a, &genome_flattend_b),
+        (&mut child_b, &genome_flattend_b, &genome_flattend_a)
+    ] {
+        for i in start..=end {
+            if child.contains(&other_parent.iter().nth(i).unwrap()) {
+                continue;
+            }else {
+                let mut index_to_insert = i;
+                let mut previous_indices: Vec<usize> = Vec::new();
+                loop {
+                    previous_indices.push(index_to_insert);
+                    index_to_insert = other_parent.iter().position(|&x| x == parent[index_to_insert]).unwrap();
+                    if (index_to_insert < start && index_to_insert > end) // index outside of selected range
+                        && !!!previous_indices.contains(&index_to_insert) // index not already used -> no cycle
+                        && child[index_to_insert] == 0 // location is not already used in child
+                    {
+                        child[index_to_insert] = *other_parent[i];
+                        break;
+                    }
+                }
+                
+            }
+        }
+    }
+
+    return (
+        unflattened_genome(&child_a, genome_a), 
+        Some(unflattened_genome(&child_b, genome_b))
+    );
+}
+
+/*
 auto edgeRecombination(const Genome &parent1, const Genome &parent2) -> std::pair<Genome, std::optional<Genome>>
 {
     std::vector<int> parent1Flat = flattenGenome(parent1);
@@ -319,6 +382,11 @@ pub fn crossover(
                     ),
                 "orderOneCrossover" =>
                     order_one_rossover(
+                        &children[individual_index_a].genome,
+                        &children[individual_index_b].genome
+                    ),
+                "partiallyMappedCrossover" =>
+                    partially_mapped_crossover(
                         &children[individual_index_a].genome,
                         &children[individual_index_b].genome
                     ),
