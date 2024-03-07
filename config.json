@@ -4,17 +4,13 @@
   "population_size": 500,
   "number_of_generations": 1000,
   "parent_selection": {
-    "name": "roulette",
+    "name": "rouletteWheel",
     "tournament_size": 5,
     "tournament_probability": 0.8
   },
   "crossovers": [
     {
       "name": "partiallyMappedCrossover",
-      "probability": 0.2
-    },
-    {
-      "name": "edgeRecombination",
       "probability": 0.2
     }
   ],
@@ -24,7 +20,7 @@
       "probability": 0.01
     },
     {
-      "name": "insertWithinJourney",
+      "name": "moveWithinJourney",
       "probability": 0.01
     },
     {
@@ -42,6 +38,7 @@
   ],
   "survivor_selection": {
     "name": "rouletteWheel",
-    "elitism_percentage": 0.1
+    "elitism_percentage": 0.1, 
+    "combine_parents_and_offspring": true
   }
 }
