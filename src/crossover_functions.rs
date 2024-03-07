@@ -60,23 +60,26 @@ fn order_one_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<
 
 
 fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
+    // Flatten genomes into 1d vector
     let genome_flattened_a: Vec<&usize> = genome_a.iter().flatten().collect();
     let genome_flattened_b: Vec<&usize> = genome_b.iter().flatten().collect();
 
-
+    // assert that the genomes have the same length and save the length in a variable for later use
     assert_eq!(genome_flattened_a.len(), genome_flattened_b.len());
     let genome_length: usize = genome_flattened_a.len();
 
+    // select a random start and end index which will be a direct copy from the parent to the child
     let mut rng = rand::thread_rng();
     let start: usize = rng.gen_range(0..genome_length);
     let end: usize = rng.gen_range(0..genome_length);
-
+    // make sure that start is smaller than end
     let (start, end) = if start > end {
         (end, start)
     } else {
         (start, end)
     };
 
+    // create two children with the same length as the genomes
     let mut child_a: Vec<usize> = vec![usize::MAX; genome_length];
     let mut child_b: Vec<usize> = vec![usize::MAX; genome_length];
 
@@ -100,7 +103,7 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
                 loop {
                     previous_indices.push(index_to_insert);
                     index_to_insert = other_parent.iter().position(|&x| x == parent[index_to_insert]).unwrap();
-                    if (index_to_insert < start && index_to_insert > end) // index outside of selected range
+                    if (index_to_insert < start || end < index_to_insert) // index outside of selected range
                         && !!!previous_indices.contains(&index_to_insert) // index not already used -> no cycle
                         && child[index_to_insert] == usize::MAX // location is not already used in child
                     {
@@ -113,10 +116,12 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
         }
 
         // fill the rest of the child with the elements from the other parent
-        for i in 0..genome_length {
-            let mut insert_index = (i + end + 1) % genome_length;
-            while child[insert_index] != usize::MAX {
-                insert_index = (insert_index + 1) % genome_length;
+        let mut i = 0;
+        while i < genome_length {
+            let insert_index = (i + end + 1) % genome_length;
+            if child[insert_index] != usize::MAX {
+                i += 1;
+                continue;
             }
             let mut source_index = (i + end + 1) % genome_length;
             while child.contains(&other_parent.iter().nth(source_index).unwrap()) {
@@ -235,7 +240,7 @@ pub fn crossover(
             }
 
             let child_genomes: (Genome, Option<Genome>) = match
-                config.parent_selection.name.as_str()
+                crossover_config.name.as_str()
             {
                 "edgeRecombination" =>
                     edge_recombination(

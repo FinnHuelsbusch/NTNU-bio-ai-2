@@ -1,6 +1,6 @@
 use crate::{
     config::Config,
-    individual::{ calculate_fitness, unflattened_genome, Genome, Individual, Journey },
+    individual::{ calculate_fitness, is_journey_valid, Genome, Individual, Journey },
     population::Population,
     problem_instance::ProblemInstance,
 };
@@ -9,7 +9,7 @@ use rand::Rng;
 fn reassign_one_patient(
     genome: &Genome,
     problem_instance: &ProblemInstance,
-    config: &Config
+    _config: &Config
 ) -> Genome {
     let mut target_genome: Genome = genome.clone();
     let mut rng = rand::thread_rng();
@@ -21,9 +21,10 @@ fn reassign_one_patient(
         }
     }
     let source_patient_index: usize = rng.gen_range(0..target_genome[source_nurse].len());
+    let patient = target_genome[source_nurse].remove(source_patient_index);
+    // patient is removed from the source nurse before the target nurse and index is selected to avoid the case where the source and target nurse are the same and the patient is inserted at an index that is out of bounds
     let target_nurse: usize = rng.gen_range(0..problem_instance.number_of_nurses);
     let target_patient_index: usize = rng.gen_range(0..=target_genome[target_nurse].len());
-    let patient = target_genome[source_nurse].remove(source_patient_index);
     target_genome[target_nurse].insert(target_patient_index, patient);
     return target_genome;
 }
@@ -31,7 +32,7 @@ fn reassign_one_patient(
 fn swap_within_journey(
     genome: &Genome,
     problem_instance: &ProblemInstance,
-    config: &Config
+    _config: &Config
 ) -> Genome {
     let mut target_genome: Genome = genome.clone();
     let mut rng = rand::thread_rng();
@@ -42,17 +43,19 @@ fn swap_within_journey(
             break;
         }
     }
-    let source_patient_index: usize = rng.gen_range(0..target_genome[source_nurse].len());
-    let target_patient_index: usize = rng.gen_range(0..target_genome[source_nurse].len());
-    let patient = target_genome[source_nurse].remove(source_patient_index);
-    target_genome[source_nurse].insert(target_patient_index, patient);
+    let patient_index_a: usize = rng.gen_range(0..target_genome[source_nurse].len());
+    let patient_index_b: usize = rng.gen_range(0..target_genome[source_nurse].len());
+    let patient_a = target_genome[source_nurse][patient_index_a];
+    let patient_b = target_genome[source_nurse][patient_index_b];
+    target_genome[source_nurse][patient_index_a] = patient_b;
+    target_genome[source_nurse][patient_index_b] = patient_a;
     return target_genome;
 }
 
 fn swap_between_journeys(
     genome: &Genome,
     problem_instance: &ProblemInstance,
-    config: &Config
+    _config: &Config
 ) -> Genome {
     let mut target_genome: Genome = genome.clone();
     let mut rng = rand::thread_rng();
@@ -82,7 +85,7 @@ fn swap_between_journeys(
 fn move_within_journey(
     genome: &Genome,
     problem_instance: &ProblemInstance,
-    config: &Config
+    _config: &Config
 ) -> Genome {
     let mut target_genome: Genome = genome.clone();
     let mut rng = rand::thread_rng();
@@ -100,7 +103,11 @@ fn move_within_journey(
     return target_genome;
 }
 
-fn inverse_journey(genome: &Genome, problem_instance: &ProblemInstance, config: &Config) -> Genome {
+fn inverse_journey(
+    genome: &Genome,
+    problem_instance: &ProblemInstance,
+    _config: &Config
+) -> Genome {
     let mut target_genome: Genome = genome.clone();
     let mut rng = rand::thread_rng();
     let mut nurese: usize;
@@ -114,11 +121,11 @@ fn inverse_journey(genome: &Genome, problem_instance: &ProblemInstance, config: 
     return target_genome;
 }
 
-fn two_opt(genome: &Genome, problem_instance: &ProblemInstance, config: &Config) -> Genome {
-    let mut target_genome: Genome = genome.clone();
+fn two_opt(genome: &Genome, problem_instance: &ProblemInstance, _config: &Config) -> Genome {
+    let target_genome: Genome = genome.clone();
     let mut rng = rand::thread_rng();
     let mut nurses_with_three_or_more_patients: Vec<usize> = Vec::new();
-    for (nurese, journey) in target_genome.iter().enumerate() {
+    for (nurese, _) in target_genome.iter().enumerate() {
         if target_genome[nurese].len() >= 3 {
             nurses_with_three_or_more_patients.push(nurese);
         }
@@ -177,6 +184,200 @@ fn two_opt(genome: &Genome, problem_instance: &ProblemInstance, config: &Config)
     return target_genome;
 }
 
+// auto splitJourney(Genome &genome, const FunctionParameters &parameters) -> Genome{
+//     auto logger = spdlog::get("main_logger");
+//     logger->trace("Starting splitJourney mutation");
+//     RandomGenerator& rng = RandomGenerator::getInstance();
+//     int destinationNurse = -1;
+//     for (int i = 0; i < genome.size(); i++){
+//         if (genome[i].size() == 0){
+//             destinationNurse = i;
+//             break;
+//         }
+//     }
+//     if (destinationNurse == -1){
+//         logger->info("No nurse with 0 patients found --> returning original genome");
+//         return genome;
+//     }
+//     int sourceNurse;
+//     do{
+//         sourceNurse = rng.generateRandomInt(0, genome.size() - 1);
+//     }while(genome[sourceNurse].size() < 2);
+//     // split at the longest travel time
+//     double longestTravelTime = -1;
+//     int splitIndex = -1;
+//     ProblemInstance problemInstance = std::get<ProblemInstance>(parameters.at("problem_instance"));
+//     for (int i = 0; i < genome[sourceNurse].size() - 1; i++){
+//         double travelTime = problemInstance.travelTime[genome[sourceNurse][i]][genome[sourceNurse][i+1]];
+//         if (travelTime > longestTravelTime){
+//             longestTravelTime = travelTime;
+//             splitIndex = i;
+//         }
+//     }
+//     Journey newJourney;
+//     newJourney.insert(newJourney.begin(), genome[sourceNurse].begin() + splitIndex + 1, genome[sourceNurse].end());
+//     genome[destinationNurse] = newJourney;
+//     genome[sourceNurse].erase(genome[sourceNurse].begin() + splitIndex + 1, genome[sourceNurse].end());
+//     return genome;
+// }
+
+fn split_journey(genome: &Genome, problem_instance: &ProblemInstance, _config: &Config) -> Genome {
+    let mut target_genome: Genome = Vec::new();
+    let mut rng = rand::thread_rng();
+    let mut destination_nurse = usize::MAX;
+
+    for (nurse, journey) in genome.iter().enumerate() {
+        if journey.is_empty() {
+            destination_nurse = nurse;
+            break;
+        }
+    }
+
+    if destination_nurse == usize::MAX {
+        return genome.clone();
+    }
+
+    let source_nurse: usize = loop {
+        let nurse = rng.gen_range(0..problem_instance.number_of_nurses);
+        if genome[nurse].len() > 1 {
+            break nurse;
+        }
+    };
+
+    let mut longest_travel_time = -1.0;
+    let mut split_index = 0;
+
+    for (i, &location) in genome[source_nurse]
+        .iter()
+        .enumerate()
+        .take(genome[source_nurse].len() - 1) {
+        let travel_time = problem_instance.travel_time[location][genome[source_nurse][i + 1]];
+        if travel_time > longest_travel_time {
+            longest_travel_time = travel_time;
+            split_index = i;
+        }
+    }
+
+    let new_journey: Journey = genome[source_nurse][split_index + 1..].to_vec();
+    target_genome[destination_nurse] = new_journey;
+    target_genome[source_nurse] = genome[source_nurse][..split_index + 1].to_vec();
+    return target_genome;
+}
+
+// auto validateJourneyIfPatientIsInserted(const Journey& journey, const int patient_id, const uint insertionPoint, const ProblemInstance &problemInstance) -> bool
+// {
+//     if(journey.empty()){
+//         return true;
+//     }
+//     // insert patient index at insertion point
+//     Journey journeyCopy = journey;
+//     journeyCopy.insert(journeyCopy.begin() + insertionPoint, patient_id);
+//     return isJourneyValid(journeyCopy, problemInstance);
+// }
+
+fn validate_journey_if_patient_is_inserted(
+    journey: &Journey,
+    patient_id: usize,
+    insertion_point: usize,
+    problem_instance: &ProblemInstance
+) -> bool {
+    if journey.is_empty() {
+        return true;
+    }
+    let mut journey_copy = journey.clone();
+    journey_copy.insert(insertion_point, patient_id);
+    return is_journey_valid(&journey_copy, problem_instance);
+}
+
+fn insertion_heuristic(
+    genome: &Genome,
+    problem_instance: &ProblemInstance,
+    _config: &Config
+) -> Genome {
+    let mut target_genome: Genome = vec![vec![]; problem_instance.number_of_nurses];
+
+    let unflattened_genome: Vec<&usize> = genome.iter().flatten().collect();
+    for patient_id in unflattened_genome.iter() {
+        let mut min_detour = f64::MAX;
+        let mut min_detour_index = usize::MAX;
+        let mut nurse_id = usize::MAX;
+        for (nurse, _) in target_genome.iter().enumerate() {
+            let current_journey: &Journey = &target_genome[nurse];
+            if current_journey.is_empty() {
+                min_detour =
+                    problem_instance.travel_time[0][**patient_id] +
+                    problem_instance.travel_time[**patient_id][0];
+                min_detour_index = 0;
+                nurse_id = nurse;
+            } else {
+                // calculate detour if patient is inserted between first patient and depot
+                let detour: f64 =
+                    problem_instance.travel_time[0][**patient_id] +
+                    problem_instance.travel_time[**patient_id][current_journey[0]] -
+                    problem_instance.travel_time[0][current_journey[0]];
+                if
+                    detour < min_detour &&
+                    validate_journey_if_patient_is_inserted(
+                        current_journey,
+                        **patient_id,
+                        0,
+                        problem_instance
+                    )
+                {
+                    min_detour = detour;
+                    min_detour_index = 0;
+                    nurse_id = nurse;
+                }
+                // calculate detour between patients the trip back to the depot is not considered
+                for i in 0..current_journey.len() - 1 {
+                    let detour: f64 =
+                        problem_instance.travel_time[current_journey[i]][**patient_id] +
+                        problem_instance.travel_time[**patient_id][current_journey[i + 1]] -
+                        problem_instance.travel_time[current_journey[i]][current_journey[i + 1]];
+                    if
+                        detour < min_detour &&
+                        validate_journey_if_patient_is_inserted(
+                            current_journey,
+                            **patient_id,
+                            i + 1,
+                            problem_instance
+                        )
+                    {
+                        min_detour = detour;
+                        min_detour_index = i + 1;
+                        nurse_id = nurse;
+                    }
+                }
+                // calculate detour if patient is inserted between last patient and depot
+                let detour: f64 =
+                    problem_instance.travel_time[current_journey[current_journey.len() - 1]]
+                        [**patient_id] +
+                    problem_instance.travel_time[**patient_id][0] -
+                    problem_instance.travel_time[current_journey[current_journey.len() - 1]][0];
+                if
+                    detour < min_detour &&
+                    validate_journey_if_patient_is_inserted(
+                        current_journey,
+                        **patient_id,
+                        current_journey.len(),
+                        problem_instance
+                    )
+                {
+                    min_detour = detour;
+                    min_detour_index = current_journey.len();
+                    nurse_id = nurse;
+                }
+            }
+        }
+        if min_detour == f64::MAX || min_detour_index == usize::MAX || nurse_id == usize::MAX {
+            panic!("No valid insertion point found for patient {}", patient_id);
+        }
+        target_genome[nurse_id].insert(min_detour_index, **patient_id);
+    }
+
+    return target_genome;
+}
+
 pub fn mutate(
     population: &mut Population,
     problem_instance: &ProblemInstance,
@@ -184,16 +385,16 @@ pub fn mutate(
 ) -> Population {
     let mut rng = rand::thread_rng();
     let mut children: Population = population.clone();
-    for muatation_config in config.mutations.iter() {
+    for mutation_config in config.mutations.iter() {
         // Calculate the number of crossovers which should happen for the specific config
         let number_of_mutations: u64 = (
-            (config.population_size as f64) * muatation_config.probability.unwrap_or(0.0)
+            (config.population_size as f64) * mutation_config.probability.unwrap_or(0.0)
         ).ceil() as u64;
 
         for _ in 0..number_of_mutations {
             let individual_index: usize = rng.gen_range(0..config.population_size);
 
-            let child_genome: Genome = match config.parent_selection.name.as_str() {
+            let child_genome: Genome = match mutation_config.name.as_str() {
                 "reassignOnePatient" =>
                     reassign_one_patient(
                         &children[individual_index].genome,
@@ -222,14 +423,23 @@ pub fn mutate(
                     inverse_journey(&children[individual_index].genome, problem_instance, config)
                 }
                 "twoOpt" => two_opt(&children[individual_index].genome, problem_instance, config),
-
-                // Handle the rest of cases
+                "splitJourney" => {
+                    split_journey(&children[individual_index].genome, problem_instance, config)
+                }
+                "insertionHeuristic" => {
+                    insertion_heuristic(
+                        &children[individual_index].genome,
+                        problem_instance,
+                        config
+                    )
+                }
                 _ =>
                     panic!(
-                        "Didn't have an Implementation for selection function: {:?}",
-                        config.parent_selection.name.as_str()
+                        "Didn't have an Implementation for mutation function: {:?}",
+                        mutation_config.name.as_str()
                     ),
             };
+
             let mut child = Individual::new(child_genome);
             calculate_fitness(&mut child, problem_instance);
             children[individual_index] = child;
