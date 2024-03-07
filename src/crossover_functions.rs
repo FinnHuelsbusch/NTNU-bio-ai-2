@@ -9,54 +9,56 @@ use crate::{
     problem_instance::ProblemInstance,
 };
 
-/*
-auto order1Crossover(const Genome &parent1, const Genome &parent2) -> std::pair<Genome, std::optional<Genome>>
-{ 
+fn order_one_rossover (genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
+    let genome_flattend_a: Vec<&usize> = genome_a.iter().flatten().collect();
+    let genome_flattend_b: Vec<&usize> = genome_b.iter().flatten().collect();
 
-    std::vector<int> parent1Flat = flattenGenome(parent1);
-    std::vector<int> parent2Flat = flattenGenome(parent2);
-    // assert that the genomes have the same length and are longer than 1
-    assert(parent1Flat.size() == parent2Flat.size());
-    assert(parent1Flat.size() > 1);
+    // assert that the genomes have the same length
+    assert_eq!(genome_flattend_a.len(), genome_flattend_b.len());
+    let genome_length: usize = genome_flattend_a.len();
 
-    RandomGenerator& rng = RandomGenerator::getInstance();
-    int start = rng.generateRandomInt(0, parent1Flat.size() - 1);
-    int end = rng.generateRandomInt(0, parent1Flat.size() - 1);
-    if (start > end) {
-        std::swap(start, end);
-    }
-    std::vector<int> child1Flat = std::vector<int>(parent1Flat.size());
-    std::vector<int> child2Flat = std::vector<int>(parent2Flat.size());
+    let mut rng = rand::thread_rng();
+    let start: usize = rng.gen_range(0..genome_length);
+    let end: usize = rng.gen_range(0..genome_length);
+
+    let (start, end) = if start > end {
+        (end, start)
+    } else {
+        (start, end)
+    };
+
+    let mut child_a: Vec<usize> = vec![0; genome_length];
+    let mut child_b: Vec<usize> = vec![0; genome_length];
 
     // copy the selected part from parent1 to child1 and the selected part from parent2 to child2
-    for (int i = start; i <= end; i++) {
-        child1Flat[i] = parent1Flat[i];
-        child2Flat[i] = parent2Flat[i];
+    for i in start..=end {
+        child_a[i] = *genome_flattend_a[i];
+        child_b[i] = *genome_flattend_b[i];
     }
 
-    // fill the rest of the child with the remaining genes from the other parent
-    for (int i = 1; i < parent1Flat.size() - (end - start); i++) {
-        int sourceIndex = (end + i) % parent1Flat.size();
-        int targetIndex = sourceIndex; 
-        while (std::find(child1Flat.begin(), child1Flat.end(), parent2Flat[targetIndex]) != child1Flat.end()) {
-            targetIndex = (targetIndex + 1) % parent1Flat.size();
+    for (child, parent, other_parent) in &mut [
+        (&mut child_a, genome_a, genome_b),
+        (&mut child_b, genome_b, genome_a),
+    ] {
+        let number_of_non_selected_elements = genome_length - (end - start);
+
+        for i in 0..number_of_non_selected_elements {
+            let source_index = (end + i) % genome_length;
+            let mut target_index = source_index;
+            while child.contains(&parent.iter().flatten().nth(target_index).unwrap()) {
+                target_index = (target_index + 1) % genome_length;
+            }
+            child[source_index] = parent.iter().flatten().nth(target_index).unwrap().clone();
         }
-        child1Flat[sourceIndex] = parent2Flat[targetIndex];
     }
-    
-    for (int i = 1; i < parent2Flat.size() - (end - start); i++) {
-        int sourceIndex = (end + i) % parent2Flat.size();
-        int targetIndex = sourceIndex; 
-        while (std::find(child2Flat.begin(), child2Flat.end(), parent1Flat[targetIndex]) != child2Flat.end()) {
-            targetIndex = (targetIndex + 1) % parent2Flat.size();
-        }
-        child2Flat[sourceIndex] = parent1Flat[targetIndex];
-    }
-    Genome child1 = unflattenGenome(child1Flat, parent1);
-    Genome child2 = unflattenGenome(child2Flat, parent2);
-    return std::make_pair(child1, child2);
+
+    return (
+        unflattened_genome(&child_a, genome_a), 
+        Some(unflattened_genome(&child_b, genome_b))
+    );
 }
 
+/*
 auto partiallyMappedCrossover(const Genome &parent1, const Genome &parent2) -> std::pair<Genome, std::optional<Genome>>
 {
     std::vector<int> parent1Flat = flattenGenome(parent1);
@@ -312,6 +314,11 @@ pub fn crossover(
             {
                 "edgeRecombination" =>
                     edge_recombination(
+                        &children[individual_index_a].genome,
+                        &children[individual_index_b].genome
+                    ),
+                "orderOneCrossover" =>
+                    order_one_rossover(
                         &children[individual_index_a].genome,
                         &children[individual_index_b].genome
                     ),
