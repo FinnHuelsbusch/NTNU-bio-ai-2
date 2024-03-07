@@ -9,13 +9,13 @@ use crate::{
     problem_instance::ProblemInstance,
 };
 
-fn order_one_rossover (genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
-    let genome_flattend_a: Vec<&usize> = genome_a.iter().flatten().collect();
-    let genome_flattend_b: Vec<&usize> = genome_b.iter().flatten().collect();
+fn order_one_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
+    let genome_flattened_a: Vec<&usize> = genome_a.iter().flatten().collect();
+    let genome_flattened_b: Vec<&usize> = genome_b.iter().flatten().collect();
 
     // assert that the genomes have the same length
-    assert_eq!(genome_flattend_a.len(), genome_flattend_b.len());
-    let genome_length: usize = genome_flattend_a.len();
+    assert_eq!(genome_flattened_a.len(), genome_flattened_b.len());
+    let genome_length: usize = genome_flattened_a.len();
 
     let mut rng = rand::thread_rng();
     let start: usize = rng.gen_range(0..genome_length);
@@ -32,23 +32,22 @@ fn order_one_rossover (genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<
 
     // copy the selected part from parent1 to child1 and the selected part from parent2 to child2
     for i in start..=end {
-        child_a[i] = *genome_flattend_a[i];
-        child_b[i] = *genome_flattend_b[i];
+        child_a[i] = *genome_flattened_a[i];
+        child_b[i] = *genome_flattened_b[i];
     }
 
     let number_of_non_selected_elements = genome_length - (end - start);
-    for (child, parent, other_parent) in &mut [
-        (&mut child_a, genome_a, genome_b),
-        (&mut child_b, genome_b, genome_a),
+    for (child, other_parent) in &mut [
+        (&mut child_a, &genome_flattened_b),
+        (&mut child_b, &genome_flattened_a),
     ] {
         
         for i in 0..number_of_non_selected_elements {
-            let source_index = (end + i) % genome_length;
+            let source_index = (end + i + 1) % genome_length;
             let mut target_index = source_index;
-            while child.contains(&parent.iter().flatten().nth(target_index).unwrap()) {
+            while child.contains(&other_parent.iter().nth(target_index).unwrap()) {
                 target_index = (target_index + 1) % genome_length;
             }
-            child[source_index] = parent.iter().flatten().nth(target_index).unwrap().clone();
         }
     }
 
@@ -61,12 +60,12 @@ fn order_one_rossover (genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<
 
 
 fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
-    let genome_flattend_a: Vec<&usize> = genome_a.iter().flatten().collect();
-    let genome_flattend_b: Vec<&usize> = genome_b.iter().flatten().collect();
+    let genome_flattened_a: Vec<&usize> = genome_a.iter().flatten().collect();
+    let genome_flattened_b: Vec<&usize> = genome_b.iter().flatten().collect();
 
 
-    assert_eq!(genome_flattend_a.len(), genome_flattend_b.len());
-    let genome_length: usize = genome_flattend_a.len();
+    assert_eq!(genome_flattened_a.len(), genome_flattened_b.len());
+    let genome_length: usize = genome_flattened_a.len();
 
     let mut rng = rand::thread_rng();
     let start: usize = rng.gen_range(0..genome_length);
@@ -83,13 +82,13 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
 
     // copy the selected part from parent1 to child1 and the selected part from parent2 to child2
     for i in start..=end {
-        child_a[i] = *genome_flattend_a[i];
-        child_b[i] = *genome_flattend_b[i];
+        child_a[i] = *genome_flattened_a[i];
+        child_b[i] = *genome_flattened_b[i];
     }
 
     for (child, parent, other_parent) in &mut [
-        (&mut child_a, &genome_flattend_a, &genome_flattend_b),
-        (&mut child_b, &genome_flattend_b, &genome_flattend_a)
+        (&mut child_a, &genome_flattened_a, &genome_flattened_b),
+        (&mut child_b, &genome_flattened_b, &genome_flattened_a)
     ] {
         // 
         for i in start..=end {
@@ -137,27 +136,27 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
 
 fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
     // Flatten genomes into 1d vector
-    let genome_flattend_a: Vec<&usize> = genome_a.iter().flatten().collect();
-    let genome_flattend_b: Vec<&usize> = genome_b.iter().flatten().collect();
+    let genome_flattened_a: Vec<&usize> = genome_a.iter().flatten().collect();
+    let genome_flattened_b: Vec<&usize> = genome_b.iter().flatten().collect();
 
-    let genome_length: usize = genome_flattend_a.len();
+    let genome_length: usize = genome_flattened_a.len();
 
-    assert_eq!(genome_flattend_a.len(), genome_flattend_b.len());
+    assert_eq!(genome_flattened_a.len(), genome_flattened_b.len());
 
     let mut adjacency_list: Vec<Vec<usize>> = vec![Vec::new(); genome_length];
 
     for index in 0..genome_length {
         let left = (index - 1 + genome_length) % genome_length;
         let right = (index + 1) % genome_length;
-        adjacency_list[*genome_flattend_a[index]].push(*genome_flattend_a[left]);
-        adjacency_list[*genome_flattend_a[index]].push(*genome_flattend_a[right]);
-        adjacency_list[*genome_flattend_b[index]].push(*genome_flattend_b[left]);
-        adjacency_list[*genome_flattend_b[index]].push(*genome_flattend_b[right]);
+        adjacency_list[*genome_flattened_a[index]].push(*genome_flattened_a[left]);
+        adjacency_list[*genome_flattened_a[index]].push(*genome_flattened_a[right]);
+        adjacency_list[*genome_flattened_b[index]].push(*genome_flattened_b[left]);
+        adjacency_list[*genome_flattened_b[index]].push(*genome_flattened_b[right]);
     }
 
     let mut rng = rand::thread_rng();
     let mut child: Vec<usize> = Vec::with_capacity(genome_length);
-    let mut current = *genome_flattend_a[rng.gen_range(0..genome_length)];
+    let mut current = *genome_flattened_a[rng.gen_range(0..genome_length)];
 
     for _ in 0..genome_length {
         child.push(current);
@@ -202,7 +201,7 @@ fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<G
 
         if new_current == usize::MAX {
             loop {
-                new_current = *genome_flattend_a[rng.gen_range(0..genome_length)];
+                new_current = *genome_flattened_a[rng.gen_range(0..genome_length)];
                 if new_current == adjacency_list.len() - 1 {
                     break;
                 }
@@ -244,7 +243,7 @@ pub fn crossover(
                         &children[individual_index_b].genome
                     ),
                 "orderOneCrossover" =>
-                    order_one_rossover(
+                    order_one_crossover(
                         &children[individual_index_a].genome,
                         &children[individual_index_b].genome
                     ),
