@@ -1,6 +1,6 @@
 use crate::{
     config::Config,
-    individual::{calculate_fitness, unflattened_genome, Genome, Individual, Journey},
+    individual::{calculate_fitness, is_journey_valid, unflattened_genome, Genome, Individual, Journey},
     population::Population,
     problem_instance::ProblemInstance,
 };
@@ -171,6 +171,158 @@ fn inverse_journey(genome: &Genome, problem_instance: &ProblemInstance, config: 
 //     return target_genome;
 // }
 
+// auto splitJourney(Genome &genome, const FunctionParameters &parameters) -> Genome{
+//     auto logger = spdlog::get("main_logger");
+//     logger->trace("Starting splitJourney mutation");
+//     RandomGenerator& rng = RandomGenerator::getInstance();
+//     int destinationNurse = -1;
+//     for (int i = 0; i < genome.size(); i++){
+//         if (genome[i].size() == 0){
+//             destinationNurse = i;
+//             break;
+//         }
+//     }
+//     if (destinationNurse == -1){
+//         logger->info("No nurse with 0 patients found --> returning original genome");
+//         return genome;
+//     }
+//     int sourceNurse;
+//     do{
+//         sourceNurse = rng.generateRandomInt(0, genome.size() - 1);
+//     }while(genome[sourceNurse].size() < 2);
+//     // split at the longest travel time
+//     double longestTravelTime = -1; 
+//     int splitIndex = -1;
+//     ProblemInstance problemInstance = std::get<ProblemInstance>(parameters.at("problem_instance"));
+//     for (int i = 0; i < genome[sourceNurse].size() - 1; i++){
+//         double travelTime = problemInstance.travelTime[genome[sourceNurse][i]][genome[sourceNurse][i+1]];
+//         if (travelTime > longestTravelTime){
+//             longestTravelTime = travelTime;
+//             splitIndex = i;
+//         }
+//     }
+//     Journey newJourney;
+//     newJourney.insert(newJourney.begin(), genome[sourceNurse].begin() + splitIndex + 1, genome[sourceNurse].end());
+//     genome[destinationNurse] = newJourney;
+//     genome[sourceNurse].erase(genome[sourceNurse].begin() + splitIndex + 1, genome[sourceNurse].end());
+//     return genome;
+// }
+
+fn split_journey(genome: &Genome, problem_instance: &ProblemInstance, config: &Config) -> Genome {
+    let mut target_genome: Genome = Vec::new();
+    let mut rng = rand::thread_rng();
+    let mut destination_nurse = usize::MAX;
+
+    for (nurse, journey) in genome.iter().enumerate() {
+        if journey.is_empty() {
+            destination_nurse = nurse;
+            break;
+        }
+    }
+
+    if destination_nurse == usize::MAX {
+        return genome.clone();
+    }
+
+    let source_nurse: usize = loop {
+        let nurse = rng.gen_range(0..problem_instance.number_of_nurses);
+        if genome[nurse].len() > 1 {
+            break nurse;
+        }
+    };
+
+    let mut longest_travel_time = -1.0;
+    let mut split_index = 0;
+
+    for (i, &location) in genome[source_nurse].iter().enumerate().take(genome[source_nurse].len() - 1) {
+        let travel_time = problem_instance.travel_time[location][genome[source_nurse][i + 1]];
+        if travel_time > longest_travel_time {
+            longest_travel_time = travel_time;
+            split_index = i;
+        }
+    }
+
+    let new_journey: Journey = genome[source_nurse][split_index + 1..].to_vec();
+    target_genome[destination_nurse] = new_journey;
+    target_genome[source_nurse] = genome[source_nurse][..split_index + 1].to_vec();
+    return target_genome;
+}
+
+// auto validateJourneyIfPatientIsInserted(const Journey& journey, const int patient_id, const uint insertionPoint, const ProblemInstance &problemInstance) -> bool
+// {
+//     if(journey.empty()){
+//         return true;
+//     }
+//     // insert patient index at insertion point
+//     Journey journeyCopy = journey;
+//     journeyCopy.insert(journeyCopy.begin() + insertionPoint, patient_id);
+//     return isJourneyValid(journeyCopy, problemInstance);
+// }
+
+fn validate_journey_if_patient_is_inserted(
+    journey: &Journey,
+    patient_id: usize,
+    insertion_point: usize,
+    problem_instance: &ProblemInstance,
+) -> bool {
+    if journey.is_empty() {
+        return true;
+    }
+    let mut journey_copy = journey.clone();
+    journey_copy.insert(insertion_point, patient_id);
+    return is_journey_valid(&journey_copy, problem_instance);
+}
+
+fn insertion_heuristic(genome: &Genome, problem_instance: &ProblemInstance, config: &Config) -> Genome {
+    let mut target_genome: Genome = vec![vec![]; problem_instance.number_of_nurses];
+
+    let unflattened_genome: Vec<&usize> = genome.iter().flatten().collect(); 
+    for patient_id in unflattened_genome.iter() {
+        let mut minDetour = f64::MAX;
+        let mut minDetourIndex = usize::MAX;
+        let mut nurseID = usize::MAX;
+        for (nurse, source_journey) in target_genome.iter().enumerate() {
+            let current_journey: &Journey = &target_genome[nurse];
+            if current_journey.is_empty() {
+                minDetour = problem_instance.travel_time[0][**patient_id] + problem_instance.travel_time[**patient_id][0];
+                minDetourIndex = 0;
+                nurseID = nurse;
+            } else {
+                // calculate detour if patient is inserted between first patient and depot
+                let detour: f64 = problem_instance.travel_time[0][**patient_id] + problem_instance.travel_time[**patient_id][current_journey[0]] - problem_instance.travel_time[0][current_journey[0]];
+                if detour < minDetour && validate_journey_if_patient_is_inserted(current_journey, **patient_id, 0, problem_instance){
+                    minDetour = detour;
+                    minDetourIndex = 0;
+                    nurseID = nurse;
+                }
+                // calculate detour between patients the trip back to the depot is not considered
+                for i in 0..current_journey.len() - 1 {
+                    let detour: f64 = problem_instance.travel_time[current_journey[i]][**patient_id] + problem_instance.travel_time[**patient_id][current_journey[i + 1]] - problem_instance.travel_time[current_journey[i]][current_journey[i + 1]];
+                    if detour < minDetour && validate_journey_if_patient_is_inserted(current_journey, **patient_id, i + 1, problem_instance){
+                        minDetour = detour;
+                        minDetourIndex = i + 1;
+                        nurseID = nurse;
+                    }
+                }
+                // calculate detour if patient is inserted between last patient and depot
+                let detour: f64 = problem_instance.travel_time[current_journey[current_journey.len() - 1]][**patient_id] + problem_instance.travel_time[**patient_id][0] - problem_instance.travel_time[current_journey[current_journey.len() - 1]][0];
+                if detour < minDetour && validate_journey_if_patient_is_inserted(current_journey, **patient_id, current_journey.len(), problem_instance){
+                    minDetour = detour;
+                    minDetourIndex = current_journey.len();
+                    nurseID = nurse;
+                }
+            }
+        }
+        if minDetour == f64::MAX || minDetourIndex == usize::MAX || nurseID == usize::MAX {
+            panic!("No valid insertion point found for patient {}", patient_id);
+        }
+        target_genome[nurseID].insert(minDetourIndex, **patient_id);
+    }
+
+
+    return target_genome;
+}
+
 pub fn mutate(
     population: &mut Population,
     problem_instance: &ProblemInstance,
@@ -210,7 +362,13 @@ pub fn mutate(
                 ),
                 "inverseJourney" => {
                     inverse_journey(&children[individual_index].genome, problem_instance, config)
-                }
+                }, 
+                "splitJourney" => {
+                    split_journey(&children[individual_index].genome, problem_instance, config)
+                },
+                "insertionHeuristic" => {
+                    insertion_heuristic(&children[individual_index].genome, problem_instance, config)
+                },
                 //"twoOpt" => two_opt(&children[individual_index].genome, problem_instance, config),
 
                 // Handle the rest of cases
