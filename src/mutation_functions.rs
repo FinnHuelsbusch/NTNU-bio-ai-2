@@ -21,9 +21,10 @@ fn reassign_one_patient(
         }
     }
     let source_patient_index: usize = rng.gen_range(0..target_genome[source_nurse].len());
+    let patient = target_genome[source_nurse].remove(source_patient_index);
+    // patient is removed from the source nurse before the target nurse and index is selected to avoid the case where the source and target nurse are the same and the patient is inserted at an index that is out of bounds
     let target_nurse: usize = rng.gen_range(0..problem_instance.number_of_nurses);
     let target_patient_index: usize = rng.gen_range(0..=target_genome[target_nurse].len());
-    let patient = target_genome[source_nurse].remove(source_patient_index);
     target_genome[target_nurse].insert(target_patient_index, patient);
     return target_genome;
 }
@@ -42,10 +43,12 @@ fn swap_within_journey(
             break;
         }
     }
-    let source_patient_index: usize = rng.gen_range(0..target_genome[source_nurse].len());
-    let target_patient_index: usize = rng.gen_range(0..target_genome[source_nurse].len());
-    let patient = target_genome[source_nurse].remove(source_patient_index);
-    target_genome[source_nurse].insert(target_patient_index, patient);
+    let patient_index_a: usize = rng.gen_range(0..target_genome[source_nurse].len());
+    let patient_index_b: usize = rng.gen_range(0..target_genome[source_nurse].len());
+    let patient_a = target_genome[source_nurse][patient_index_a];
+    let patient_b = target_genome[source_nurse][patient_index_b];
+    target_genome[source_nurse][patient_index_a] = patient_b;
+    target_genome[source_nurse][patient_index_b] = patient_a;
     return target_genome;
 }
 
@@ -184,7 +187,7 @@ pub fn mutate(
         for _ in 0..number_of_mutations {
             let individual_index: usize = rng.gen_range(0..config.population_size);
 
-            let child_genome: (Genome) = match config.parent_selection.name.as_str() {
+            let child_genome: (Genome) = match muatation_config.name.as_str() {
                 "reassignOnePatient" => reassign_one_patient(
                     &children[individual_index].genome,
                     problem_instance,
