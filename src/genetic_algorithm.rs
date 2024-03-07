@@ -1,5 +1,10 @@
 use crate::{
-    config::Config, crossover_functions::crossover, mutation_functions::mutate, population::{ get_average_fitness, initialize_population, Population }, problem_instance::ProblemInstance, selection_functions::{parent_selection, survivor_selection}
+    config::Config,
+    crossover_functions::crossover,
+    mutation_functions::mutate,
+    population::{ get_average_travel_time, initialize_population, Population },
+    problem_instance::ProblemInstance,
+    selection_functions::{ parent_selection, survivor_selection },
 };
 
 use std::io;
@@ -11,9 +16,9 @@ fn log_population_statistics(population: &Population) {
 
     println!(
         "Best: {:?} Avg: {:?} Worst: {:?}",
-        sorted_population[0].fitness,
-        get_average_fitness(population),
-        sorted_population[sorted_population.len() - 1].fitness
+        sorted_population[0].travel_time,
+        get_average_travel_time(population),
+        sorted_population[sorted_population.len() - 1].travel_time
     )
 }
 
@@ -101,7 +106,7 @@ pub fn run_genetic_algorithm_instance(problem_instance: &ProblemInstance, config
         let mut parents = parent_selection(&population, config);
 
         print!("CROSS|");
-        io::stdout().flush().unwrap();;
+        io::stdout().flush().unwrap();
         let mut children = crossover(&mut parents, problem_instance, config);
 
         print!("MUT|");

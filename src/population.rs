@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use rand::{ Rng, thread_rng };
+use rand::Rng;
 use rand::seq::SliceRandom;
 use crate::{
     config::Config,
@@ -14,6 +14,22 @@ pub fn get_average_fitness(population: &Population) -> f64 {
     let sum: f64 = population
         .iter()
         .map(|individual| individual.fitness)
+        .sum();
+
+    // Calculate the average
+    let average = if population.is_empty() {
+        0.0 // return 0 if the vector is empty to avoid division by zero
+    } else {
+        sum / (population.len() as f64)
+    };
+
+    average
+}
+
+pub fn get_average_travel_time(population: &Population) -> f64 {
+    let sum: f64 = population
+        .iter()
+        .map(|individual| individual.travel_time)
         .sum();
 
     // Calculate the average
@@ -41,6 +57,7 @@ fn initialize_random_population(problem_instance: &ProblemInstance, config: &Con
         let mut individual = Individual {
             genome,
             fitness: 0.0,
+            travel_time: 0.0,
             missing_care_time_penalty: 0.0,
             capacity_penalty: 0.0,
             to_late_to_depot_penality: 0.0,
@@ -119,6 +136,7 @@ fn initialize_append_heuristic_population(
         } else {
             let mut individual = Individual {
                 genome,
+                travel_time: 0.0,
                 fitness: 0.0,
                 missing_care_time_penalty: 0.0,
                 capacity_penalty: 0.0,

@@ -9,6 +9,7 @@ pub type Genome = Vec<Journey>;
 pub struct Individual {
     pub genome: Genome,
     pub fitness: f64,
+    pub travel_time: f64,
 
     // penalty
     pub missing_care_time_penalty: f64,
@@ -30,6 +31,7 @@ impl Individual {
         return Individual {
             genome: genome,
             fitness: 0.0,
+            travel_time: 0.0,
             missing_care_time_penalty: 0.0,
             capacity_penalty: 0.0,
             to_late_to_depot_penality: 0.0,
@@ -108,6 +110,7 @@ pub fn calculate_fitness(individual: &mut Individual, problem_instance: &Problem
     let mut to_late_to_depot_penality = 0.0;
 
     let travel_time = &problem_instance.travel_time;
+    let mut combined_travel_time = 0.0;
 
     for journey in &individual.genome {
         let mut nurse_trip_time = 0.0;
@@ -152,12 +155,15 @@ pub fn calculate_fitness(individual: &mut Individual, problem_instance: &Problem
             nurse_trip_time - (problem_instance.depot.return_time as f64)
         );
         combined_trip_time += nurse_travel_time;
+        combined_travel_time += nurse_travel_time;
     }
     let fitness =
         -combined_trip_time -
         capacity_penalty * 100000.0 -
         missing_care_time_penalty * 10000.0 -
         to_late_to_depot_penality * 10000.0;
+
+    individual.travel_time = combined_travel_time;
     individual.fitness = fitness;
     individual.missing_care_time_penalty = missing_care_time_penalty;
     individual.capacity_penalty = capacity_penalty;

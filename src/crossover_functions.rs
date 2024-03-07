@@ -21,11 +21,7 @@ fn order_one_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<
     let start: usize = rng.gen_range(0..genome_length);
     let end: usize = rng.gen_range(0..genome_length);
 
-    let (start, end) = if start > end {
-        (end, start)
-    } else {
-        (start, end)
-    };
+    let (start, end) = if start > end { (end, start) } else { (start, end) };
 
     let mut child_a: Vec<usize> = vec![0; genome_length];
     let mut child_b: Vec<usize> = vec![0; genome_length];
@@ -41,7 +37,6 @@ fn order_one_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<
         (&mut child_a, &genome_flattened_b),
         (&mut child_b, &genome_flattened_a),
     ] {
-        
         for i in 0..number_of_non_selected_elements {
             let source_index = (end + i + 1) % genome_length;
             let mut target_index = source_index;
@@ -51,13 +46,8 @@ fn order_one_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<
         }
     }
 
-    return (
-        unflattened_genome(&child_a, genome_a), 
-        Some(unflattened_genome(&child_b, genome_b))
-    );
+    return (unflattened_genome(&child_a, genome_a), Some(unflattened_genome(&child_b, genome_b)));
 }
-
-
 
 fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
     // Flatten genomes into 1d vector
@@ -73,11 +63,7 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
     let start: usize = rng.gen_range(0..genome_length);
     let end: usize = rng.gen_range(0..genome_length);
     // make sure that start is smaller than end
-    let (start, end) = if start > end {
-        (end, start)
-    } else {
-        (start, end)
-    };
+    let (start, end) = if start > end { (end, start) } else { (start, end) };
 
     // create two children with the same length as the genomes
     let mut child_a: Vec<usize> = vec![usize::MAX; genome_length];
@@ -91,27 +77,30 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
 
     for (child, parent, other_parent) in &mut [
         (&mut child_a, &genome_flattened_a, &genome_flattened_b),
-        (&mut child_b, &genome_flattened_b, &genome_flattened_a)
+        (&mut child_b, &genome_flattened_b, &genome_flattened_a),
     ] {
-        // 
+        //
         for i in start..=end {
             if child.contains(&other_parent.iter().nth(i).unwrap()) {
                 continue;
-            }else {
+            } else {
                 let mut index_to_insert = i;
                 let mut previous_indices: Vec<usize> = Vec::new();
                 loop {
                     previous_indices.push(index_to_insert);
-                    index_to_insert = other_parent.iter().position(|&x| x == parent[index_to_insert]).unwrap();
-                    if (index_to_insert < start || end < index_to_insert) // index outside of selected range
-                        && !!!previous_indices.contains(&index_to_insert) // index not already used -> no cycle
-                        && child[index_to_insert] == usize::MAX // location is not already used in child
+                    index_to_insert = other_parent
+                        .iter()
+                        .position(|&x| x == parent[index_to_insert])
+                        .unwrap();
+                    if
+                        (index_to_insert < start || end < index_to_insert) && // index outside of selected range
+                        !!!previous_indices.contains(&index_to_insert) && // index not already used -> no cycle
+                        child[index_to_insert] == usize::MAX // location is not already used in child
                     {
                         child[index_to_insert] = *other_parent[i];
                         break;
                     }
                 }
-                
             }
         }
 
@@ -127,16 +116,11 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
             while child.contains(&other_parent.iter().nth(source_index).unwrap()) {
                 source_index = (source_index + 1) % genome_length;
             }
-            child[insert_index] = **other_parent.iter().nth(source_index).unwrap(); 
+            child[insert_index] = **other_parent.iter().nth(source_index).unwrap();
         }
-
-
     }
 
-    return (
-        unflattened_genome(&child_a, genome_a), 
-        Some(unflattened_genome(&child_b, genome_b))
-    );
+    return (unflattened_genome(&child_a, genome_a), Some(unflattened_genome(&child_b, genome_b)));
 }
 
 fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
@@ -151,7 +135,7 @@ fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<G
     let mut adjacency_list: Vec<Vec<usize>> = vec![Vec::new(); genome_length];
 
     for index in 0..genome_length {
-        let left = (index - 1 + genome_length) % genome_length;
+        let left = (index + genome_length - 1) % genome_length;
         let right = (index + 1) % genome_length;
         adjacency_list[*genome_flattened_a[index]].push(*genome_flattened_a[left]);
         adjacency_list[*genome_flattened_a[index]].push(*genome_flattened_a[right]);
@@ -239,9 +223,7 @@ pub fn crossover(
                 individual_index_b = rng.gen_range(0..config.population_size);
             }
 
-            let child_genomes: (Genome, Option<Genome>) = match
-                crossover_config.name.as_str()
-            {
+            let child_genomes: (Genome, Option<Genome>) = match crossover_config.name.as_str() {
                 "edgeRecombination" =>
                     edge_recombination(
                         &children[individual_index_a].genome,
