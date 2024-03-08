@@ -1,7 +1,7 @@
 use log::info;
 
 use crate::{
-    config::Config,
+    config::{ self, Config },
     crossover_functions::crossover,
     individual::{ self, Individual },
     mutation_functions::mutate,
@@ -56,9 +56,33 @@ fn log_population_statistics(generation: usize, population: &Population) {
     );
 }
 
+fn cool_down_config(generation: usize, config: &mut Config) {
+    for crossover_config in config.crossovers.iter_mut() {
+        if let Some(delta) = crossover_config.annealing_delta {
+            crossover_config.probability = Some(
+                (
+                    crossover_config.probability.unwrap_or(0.0) +
+                    delta * ((generation as f64) + 1.0).log(2.0)
+                ).clamp(0.0, 1.0)
+            );
+        }
+    }
+
+    for mutation_config in config.mutations.iter_mut() {
+        if let Some(delta) = mutation_config.annealing_delta {
+            mutation_config.probability = Some(
+                (
+                    mutation_config.probability.unwrap_or(0.0) +
+                    delta * ((generation as f64) + 1.0).log(2.0)
+                ).clamp(0.0, 1.0)
+            );
+        }
+    }
+}
+
 pub fn run_genetic_algorithm_instance(
     problem_instance: &ProblemInstance,
-    config: &Config
+    config: &mut Config
 ) -> Individual {
     let mut population: Population = initialize_population(problem_instance, config);
     let mut best_individual: Individual = population[0].clone();
@@ -86,6 +110,8 @@ pub fn run_genetic_algorithm_instance(
         if population[0].travel_time < best_individual.travel_time  && population[0].is_feasible(){
             best_individual = population[0].clone();
         }
+
+        cool_down_config(generation, config);
 
         log_population_statistics(generation, &population);
     }

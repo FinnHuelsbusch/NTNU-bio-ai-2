@@ -18,12 +18,12 @@ fn main() {
     simple_logging::log_to_file("./python/statistics_rust.txt", LevelFilter::Info);
 
     // Load config
-    let config = initialize_config("./config.json");
+    let mut config = initialize_config("./config.json");
     println!("{}", serde_json::to_string_pretty(&config).unwrap());
     // Load the specified problem instance
     let problem_instance = initialize_problem_instance(&config.problem_instance);
 
-    let best = run_genetic_algorithm_instance(&problem_instance, &config);
+    let best = run_genetic_algorithm_instance(&problem_instance, &mut config);
 
     best.export_to_file("./python/solution.json")
 }
