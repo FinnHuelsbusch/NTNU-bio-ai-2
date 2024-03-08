@@ -53,15 +53,29 @@ fn full_replacement_selection(
 }
 
 pub fn parent_selection(population: &Population, config: &Config) -> Population {
-    match config.parent_selection.name.as_str() {
+    let number_of_elites = (config.parent_selection.elitism_percentage.unwrap_or(0.0)
+        * (config.population_size as f64))
+        .ceil() as usize;
+    assert!(number_of_elites < config.population_size);
+    let mut new_population: Population = Vec::with_capacity(config.population_size);
+    if number_of_elites > 0 {
+        let mut sorted_population: Population = population.clone();
+        sorted_population.sort_unstable_by(|a, b| a.fitness.total_cmp(&b.fitness));
+        new_population.extend(sorted_population.iter().take(number_of_elites).cloned());
+    }
+    let selected_population: Population = match config.parent_selection.name.as_str() {
         // Match a single value
-        "rouletteWheel" => roulette_wheel_selection(population, population.len()),
+        "rouletteWheel" => {
+            roulette_wheel_selection(&population, config.population_size - number_of_elites)
+        }
         // Handle the rest of cases
         _ => panic!(
             "Didn't have an Implementation for selection function: {:?}",
             config.parent_selection.name.as_str()
         ),
-    }
+    };
+    new_population.extend(selected_population);
+    new_population
 }
 
 pub fn survivor_selection(

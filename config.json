@@ -1,20 +1,17 @@
 {
-  "problem_instance": "./train/train_0.json",
+  "problem_instance": "./train/train_9.json",
   "population_initialisation": "appendHeuristic",
   "population_size": 1000,
   "number_of_generations": 500,
   "parent_selection": {
     "name": "rouletteWheel",
     "tournament_size": 5,
-    "tournament_probability": 0.8
+    "tournament_probability": 0.8,
+    "elitism_percentage": 0.05
   },
   "crossovers": [
     {
       "name": "partiallyMappedCrossover",
-      "probability": 0.1
-    },
-    {
-      "name": "edgeRecombination",
       "probability": 0.1
     }
   ],
@@ -37,12 +34,12 @@
     },
     {
       "name": "insertionHeuristic",
-      "probability": 0.2
+      "probability": 0.8
     }
   ],
   "survivor_selection": {
     "name": "rouletteWheel",
-    "elitism_percentage": 0.1,
+    "elitism_percentage": 0.05,
     "combine_parents_and_offspring": true
   }
 }
