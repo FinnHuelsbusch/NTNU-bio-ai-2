@@ -42,6 +42,93 @@ fn roulette_wheel_selection(population: &Population, population_size: usize) -> 
     new_population
 }
 
+/*
+auto tournamentSelection(const Population &population, const FunctionParameters &parameters, const int populationSize) -> Population
+{
+    auto mainLogger = spdlog::get("main_logger");
+    // check that the parameters are present
+    if (parameters.find("tournamentSize") == parameters.end() || parameters.find("tournamentProbability") == parameters.end())
+    {
+        throw std::invalid_argument("Tournament selection requires the parameters 'tournamentSize' and 'tournamentProbability'");
+    }
+
+    int tournamentSize = std::get<int>(parameters.at("tournamentSize"));
+    double tournamentProbability = std::get<double>(parameters.at("tournamentProbability"));
+    mainLogger->trace("TournamentSize {}", tournamentSize);
+    mainLogger->trace("TournamentProbability {}", tournamentProbability);
+    Population parents;
+    RandomGenerator &rng = RandomGenerator::getInstance();
+    for (int i = 0; i < populationSize; i++)
+    {
+        std::vector<int> tournament;
+        tournament.reserve(tournamentSize);
+        for (int j = 0; j < tournamentSize; j++)
+        {
+            int index = rng.generateRandomInt(0, population.size() - 1);
+            tournament.push_back(index);
+        }
+
+        // get index of best individual according to fitness
+        auto it = std::max_element(tournament.begin(), tournament.end(), [&population](int a, int b) {
+            return population[a].fitness < population[b].fitness;
+        });
+
+        int bestIndex = std::distance(tournament.begin(), it);
+
+        double randNumber = rng.generateRandomDouble(0, 1);
+        if (randNumber <= tournamentProbability)
+        {
+            parents.push_back(population[tournament[bestIndex]]);
+        }
+        else
+        {
+            // remove the best individual from the tournament
+            tournament.erase(tournament.begin() + bestIndex);
+            // select a random individual from the remaining ones
+            int randomIndex = rng.generateRandomInt(0, tournament.size() - 1);
+            parents.push_back(population[tournament[randomIndex]]);
+        }
+    }
+    return parents;
+}
+ */
+
+fn tournament_selection(population: &Population, population_size: usize, config: &Config) -> Population {
+    let tournament_size = config.parent_selection.tournament_size.unwrap();
+    let tournament_probability = config.parent_selection.tournament_probability.unwrap();
+    let mut new_population: Population = Vec::with_capacity(population_size);
+    let mut rng = rand::thread_rng();
+
+    for _ in 0..population_size {
+        let mut tournament: Vec<usize> = Vec::with_capacity(tournament_size);
+        for _ in 0..tournament_size {
+            let index = rng.gen_range(0..population.len());
+            tournament.push(index);
+        }
+
+        let best_index = tournament
+            .iter()
+            .enumerate()
+            .max_by(|(_, a), (_, b)| {
+                population[**a]
+                    .fitness
+                    .partial_cmp(&population[**b].fitness)
+                    .unwrap()
+            }).unwrap().0;
+
+        let rand_number = rng.gen::<f64>();
+        if rand_number <= tournament_probability {
+            new_population.push(population[best_index].clone());
+        } else {
+            tournament.remove(best_index);
+            let random_index = rng.gen_range(0..tournament.len());
+            new_population.push(population[tournament[random_index]].clone());
+        }
+    }
+
+    new_population
+}
+
 fn full_replacement_selection(
     population: &Population,
     children: &Population,
@@ -71,7 +158,10 @@ pub fn parent_selection(population: &Population, config: &Config) -> Population 
         // Match a single value
         "rouletteWheel" => {
             roulette_wheel_selection(&population, config.population_size - number_of_elites)
-        }
+        },
+        "tournament" => {
+            tournament_selection(&population,config.population_size - number_of_elites, config)
+        },
         // Handle the rest of cases
         _ => panic!(
             "Didn't have an Implementation for selection function: {:?}",
@@ -120,7 +210,10 @@ pub fn survivor_selection(
         ),
         "fullReplacement" => {
             full_replacement_selection(parents, children, config.population_size - number_of_elites)
-        }
+        },
+        "tournament" => {
+            tournament_selection(&selection_population,config.population_size - number_of_elites, config)
+        },
         _ => panic!(
             "Didn't have an Implementation for selection function: {:?}",
             config.parent_selection.name.as_str()

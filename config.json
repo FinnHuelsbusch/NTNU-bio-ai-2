@@ -4,7 +4,7 @@
   "population_size": 10000,
   "number_of_generations": 500,
   "parent_selection": {
-    "name": "rouletteWheel",
+    "name": "tournament",
     "tournament_size": 5,
     "tournament_probability": 0.8,
     "elitism_percentage": 0.02
