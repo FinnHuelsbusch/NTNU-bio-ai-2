@@ -70,8 +70,6 @@ fn cool_down_config(generation: usize, config: &mut Config) {
                 ).clamp(0.0, 1.0)
             );
         }
-
-        println!("{:?}, {:?}", crossover_config.probability, ((generation as f64) + 1.0).log10());
     }
 
     for mutation_config in config.mutations.iter_mut() {
@@ -83,8 +81,6 @@ fn cool_down_config(generation: usize, config: &mut Config) {
                 ).clamp(0.0, 1.0)
             );
         }
-
-        println!("{:?}, {:?}", mutation_config.probability, ((generation as f64) + 1.0).log10());
     }
 }
 
