@@ -1,12 +1,11 @@
-use log::info;
+use log::{info, warn};
 
 use crate::{
-    config::{ self, Config },
+    config::{ Config },
     crossover_functions::crossover,
-    individual::{ self, Individual },
+    individual::{ Individual },
     mutation_functions::mutate,
     population::{
-        self,
         get_average_fitness,
         get_average_travel_time,
         initialize_population,
@@ -23,6 +22,11 @@ fn log_population_statistics(generation: usize, population: &Population) {
     let mut sorted_population: Population = population.clone();
     // filter sorted_population to only include individuals with a feasible solution
     sorted_population.retain(|individual| individual.is_feasible());
+    if sorted_population.is_empty(){
+        warn!("No feasible solutions in the population. No statistics to log.");
+        println!("No feasible solutions in the population. No statistics to log.");
+        return;
+    }
     sorted_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
 
     println!(
