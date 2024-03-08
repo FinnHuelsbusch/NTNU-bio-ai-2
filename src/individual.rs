@@ -37,6 +37,18 @@ impl Individual {
             to_late_to_depot_penality: 0.0,
         }
     }
+
+    pub fn is_feasible(&self) -> bool {
+        if self.missing_care_time_penalty > 0.0
+            || self.capacity_penalty > 0.0
+            || self.to_late_to_depot_penality > 0.0
+        {
+            false
+        }else {
+            true
+        }
+        
+    }
 }
 
 pub fn is_journey_valid(journey: &Journey, problem_instance: &ProblemInstance) -> bool {
