@@ -28,14 +28,14 @@ impl Eq for Individual {}
 
 impl Individual {
     pub fn new(genome: Genome) -> Self {
-        return Individual {
-            genome: genome,
+        Individual {
+            genome,
             fitness: 0.0,
             travel_time: 0.0,
             missing_care_time_penalty: 0.0,
             capacity_penalty: 0.0,
             to_late_to_depot_penality: 0.0,
-        };
+        }
     }
 }
 
@@ -45,7 +45,7 @@ pub fn is_journey_valid(journey: &Journey, problem_instance: &ProblemInstance) -
     }
 
     let mut total_time_spent = 0.0;
-    let mut total_fullfilled_demand = 0 as u32;
+    let mut total_fullfilled_demand = 0_u32;
     for (i, patient_id) in journey.iter().enumerate() {
         if i == 0 {
             total_time_spent += problem_instance.travel_time[0][*patient_id];
@@ -67,7 +67,7 @@ pub fn is_journey_valid(journey: &Journey, problem_instance: &ProblemInstance) -
     }
     // add the driving time from the last patient to the depot if there is at least one patient
     if !journey.is_empty() {
-        total_time_spent += problem_instance.travel_time[journey[journey.len() - 1] as usize][0];
+        total_time_spent += problem_instance.travel_time[journey[journey.len() - 1]][0];
     }
     if total_time_spent > problem_instance.depot.return_time {
         return false;
@@ -152,7 +152,7 @@ pub fn calculate_fitness(individual: &mut Individual, problem_instance: &Problem
         // add penalty if we are too late to the depot
         to_late_to_depot_penality = f64::max(
             0.0,
-            nurse_trip_time - (problem_instance.depot.return_time as f64)
+            nurse_trip_time - (problem_instance.depot.return_time)
         );
         combined_trip_time += nurse_travel_time;
         combined_travel_time += nurse_travel_time;
@@ -174,7 +174,7 @@ pub fn unflattened_genome(flattend_genome: &Journey, genome_original_structure: 
     let mut result: Genome = vec![Vec::new(); genome_original_structure.len()];
 
     let mut flattened_index: usize = 0;
-    for (outer_index, original_journey) in genome_original_structure.into_iter().enumerate() {
+    for (outer_index, original_journey) in genome_original_structure.iter().enumerate() {
         for _ in 0..original_journey.len() {
             result[outer_index].push(flattend_genome[flattened_index]);
             flattened_index += 1;

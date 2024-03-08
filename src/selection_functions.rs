@@ -47,8 +47,8 @@ fn full_replacement_selection(
     children: &Population,
     population_size: usize
 ) -> Population {
-    assert!(population.len() == population_size);
-    assert!(children.len() == population_size);
+    assert_eq!(population.len(), population_size);
+    assert_eq!(children.len(), population_size);
     children.clone()
 }
 
@@ -110,5 +110,5 @@ pub fn survivor_selection(
             ),
     };
     new_population.extend(selected_population);
-    return new_population;
+    new_population
 }

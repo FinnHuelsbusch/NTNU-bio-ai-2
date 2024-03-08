@@ -17,13 +17,11 @@ pub fn get_average_fitness(population: &Population) -> f64 {
         .sum();
 
     // Calculate the average
-    let average = if population.is_empty() {
+    if population.is_empty() {
         0.0 // return 0 if the vector is empty to avoid division by zero
     } else {
         sum / (population.len() as f64)
-    };
-
-    average
+    }
 }
 
 pub fn get_average_travel_time(population: &Population) -> f64 {
@@ -33,13 +31,11 @@ pub fn get_average_travel_time(population: &Population) -> f64 {
         .sum();
 
     // Calculate the average
-    let average = if population.is_empty() {
+    if population.is_empty() {
         0.0 // return 0 if the vector is empty to avoid division by zero
     } else {
         sum / (population.len() as f64)
-    };
-
-    average
+    }
 }
 
 fn initialize_random_population(problem_instance: &ProblemInstance, config: &Config) -> Population {
@@ -62,7 +58,7 @@ fn initialize_random_population(problem_instance: &ProblemInstance, config: &Con
             capacity_penalty: 0.0,
             to_late_to_depot_penality: 0.0,
         };
-        calculate_fitness(&mut individual, &problem_instance);
+        calculate_fitness(&mut individual, problem_instance);
         population.push(individual);
     }
 
@@ -80,10 +76,10 @@ fn initialize_append_heuristic_population(
     // fill patients_by_end_time
     for patient in problem_instance.patients.values() {
         let end_time = patient.end_time;
-        if patients_by_end_time.contains_key(&end_time) {
-            patients_by_end_time.get_mut(&end_time).unwrap().push(patient.clone());
+        if let std::collections::hash_map::Entry::Vacant(e) = patients_by_end_time.entry(end_time) {
+            e.insert(vec![*patient]);
         } else {
-            patients_by_end_time.insert(end_time, vec![patient.clone()]);
+            patients_by_end_time.get_mut(&end_time).unwrap().push(*patient);
         }
     }
 
@@ -96,28 +92,26 @@ fn initialize_append_heuristic_population(
         let mut genome: Genome = vec![Vec::new(); problem_instance.number_of_nurses];
         let mut broken = false;
         'outer: for end_time in &end_times {
-            let mut patients = patients_by_end_time.get(&end_time).unwrap().clone();
+            let mut patients = patients_by_end_time.get(end_time).unwrap().clone();
             let mut rng = rand::thread_rng();
             patients.shuffle(&mut rng);
             for patient in patients {
                 let mut smallest_detour = f64::INFINITY;
                 let mut best_position = 0;
                 for (i, journey) in genome.iter().enumerate() {
-                    let detour: f64; // Declare the detour variable
-                    if journey.is_empty() {
-                        detour =
-                            problem_instance.travel_time[0][patient.id] +
-                            problem_instance.travel_time[patient.id][0];
-                    } else {
-                        detour =
-                            problem_instance.travel_time[journey[journey.len() - 1]][patient.id] +
-                            problem_instance.travel_time[patient.id][0] -
-                            problem_instance.travel_time[journey[journey.len() - 1]][0];
-                    }
+                    let detour: f64 =
+                        if journey.is_empty() {
+                                problem_instance.travel_time[0][patient.id] +
+                                problem_instance.travel_time[patient.id][0]
+                        } else {
+                                problem_instance.travel_time[journey[journey.len() - 1]][patient.id] +
+                                problem_instance.travel_time[patient.id][0] -
+                                problem_instance.travel_time[journey[journey.len() - 1]][0]
+                        };
                     if detour < smallest_detour {
                         let mut updated_journey = journey.clone();
                         updated_journey.push(patient.id);
-                        if is_journey_valid(&updated_journey, &problem_instance) {
+                        if is_journey_valid(&updated_journey, problem_instance) {
                             smallest_detour = detour;
                             best_position = i;
                         }
@@ -142,12 +136,12 @@ fn initialize_append_heuristic_population(
                 capacity_penalty: 0.0,
                 to_late_to_depot_penality: 0.0,
             };
-            calculate_fitness(&mut individual, &problem_instance);
+            calculate_fitness(&mut individual, problem_instance);
             population.push(individual);
         }
     }
 
-    return population;
+    population
 }
 
 pub fn initialize_population(problem_instance: &ProblemInstance, config: &Config) -> Population {

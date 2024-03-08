@@ -40,13 +40,13 @@ fn order_one_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<
         for i in 0..number_of_non_selected_elements {
             let source_index = (end + i + 1) % genome_length;
             let mut target_index = source_index;
-            while child.contains(&other_parent.iter().nth(target_index).unwrap()) {
+            while child.contains(other_parent.get(target_index).unwrap()) {
                 target_index = (target_index + 1) % genome_length;
             }
         }
     }
 
-    return (unflattened_genome(&child_a, genome_a), Some(unflattened_genome(&child_b, genome_b)));
+    (unflattened_genome(&child_a, genome_a), Some(unflattened_genome(&child_b, genome_b)))
 }
 
 fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
@@ -81,7 +81,7 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
     ] {
         //
         for i in start..=end {
-            if child.contains(&other_parent.iter().nth(i).unwrap()) {
+            if child.contains(other_parent.get(i).unwrap()) {
                 continue;
             } else {
                 let mut index_to_insert = i;
@@ -94,7 +94,7 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
                         .unwrap();
                     if
                         (index_to_insert < start || end < index_to_insert) && // index outside of selected range
-                        !!!previous_indices.contains(&index_to_insert) && // index not already used -> no cycle
+                        !previous_indices.contains(&index_to_insert) && // index not already used -> no cycle
                         child[index_to_insert] == usize::MAX // location is not already used in child
                     {
                         child[index_to_insert] = *other_parent[i];
@@ -113,14 +113,14 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
                 continue;
             }
             let mut source_index = (i + end + 1) % genome_length;
-            while child.contains(&other_parent.iter().nth(source_index).unwrap()) {
+            while child.contains(other_parent.get(source_index).unwrap()) {
                 source_index = (source_index + 1) % genome_length;
             }
-            child[insert_index] = **other_parent.iter().nth(source_index).unwrap();
+            child[insert_index] = **other_parent.get(source_index).unwrap();
         }
     }
 
-    return (unflattened_genome(&child_a, genome_a), Some(unflattened_genome(&child_b, genome_b)));
+    (unflattened_genome(&child_a, genome_a), Some(unflattened_genome(&child_b, genome_b)))
 }
 
 fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
@@ -163,7 +163,7 @@ fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<G
         let mut seen: HashSet<usize> = HashSet::new();
 
         for value in &mut adjacency_list[current] {
-            if seen.contains(&value) {
+            if seen.contains(value) {
                 new_current = *value;
                 break;
             }
@@ -172,8 +172,8 @@ fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<G
 
         // choice of new current is not random if there are two list of equal length.
         if new_current == usize::MAX {
+            let mut min_size = usize::MAX;
             for value in &adjacency_list[current] {
-                let mut min_size = usize::MAX;
                 let value_set: HashSet<&usize> = HashSet::from_iter(adjacency_list[current].iter());
                 if value_set.len() <= min_size {
                     min_size = value_set.len();
@@ -199,7 +199,7 @@ fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<G
         current = new_current;
     }
 
-    return (unflattened_genome(&child, genome_a), None);
+    (unflattened_genome(&child, genome_a), None)
 }
 
 pub fn crossover(
@@ -252,13 +252,10 @@ pub fn crossover(
             calculate_fitness(&mut child_a, problem_instance);
             children[individual_index_a] = child_a;
 
-            match child_genomes.1 {
-                Some(genome) => {
-                    let mut child_b = Individual::new(genome);
-                    calculate_fitness(&mut child_b, problem_instance);
-                    children[individual_index_b] = child_b;
-                }
-                None => {}
+            if let Some(genome) = child_genomes.1 {
+                let mut child_b = Individual::new(genome);
+                calculate_fitness(&mut child_b, problem_instance);
+                children[individual_index_b] = child_b;
             }
         }
     }
