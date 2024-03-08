@@ -11,10 +11,10 @@ pub struct FunctionConfig {
     pub annealing_delta: Option<f64>,
 
     #[serde(default)]
-    pub tournament_size: Option<u32>,
+    pub tournament_size: Option<usize>,
 
     #[serde(default)]
-    pub tournament_probability: Option<f32>,
+    pub tournament_probability: Option<f64>,
 
     #[serde(default)]
     pub elitism_percentage: Option<f64>,
