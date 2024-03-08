@@ -1,2 +1,7 @@
 /target
 .idea
+
+/metrics
+/python/solution.json
+/python/statistics_rust.txt
+/python/gantt.csv

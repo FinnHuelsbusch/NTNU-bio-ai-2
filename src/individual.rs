@@ -1,11 +1,13 @@
-use std::{cmp::Ordering, collections::HashMap};
+use std::{ cmp::Ordering, collections::HashMap, fs::File, io::Write };
+
+use serde::Serialize;
 
 use crate::problem_instance::ProblemInstance;
 
 pub type Journey = Vec<usize>;
 pub type Genome = Vec<Journey>;
 
-#[derive(Debug, PartialEq, PartialOrd, Clone)]
+#[derive(Debug, PartialEq, PartialOrd, Clone, Serialize)]
 pub struct Individual {
     pub genome: Genome,
     pub fitness: f64,
@@ -39,15 +41,24 @@ impl Individual {
     }
 
     pub fn is_feasible(&self) -> bool {
-        if self.missing_care_time_penalty > 0.0
-            || self.capacity_penalty > 0.0
-            || self.to_late_to_depot_penality > 0.0
+        if
+            self.missing_care_time_penalty > 0.0 ||
+            self.capacity_penalty > 0.0 ||
+            self.to_late_to_depot_penality > 0.0
         {
             false
-        }else {
+        } else {
             true
         }
-        
+    }
+
+    pub fn export_to_file(&self, file_path: &str) {
+        // Serialize the struct to JSON
+        let json_string = serde_json::to_string(&self).unwrap();
+
+        // Write JSON string to a file
+        let mut file = File::create(file_path).expect("Unable to create file");
+        file.write_all(json_string.as_bytes()).expect("Unable to write to file");
     }
 }
 
@@ -140,8 +151,9 @@ pub fn calculate_fitness(individual: &mut Individual, problem_instance: &Problem
                 nurse_travel_time += travel_time[journey[i - 1]][*patient_id];
             }
             // If the nurse_trip_time is lower than the patient's start time, wait to the start of the time window
-            nurse_trip_time =
-                nurse_trip_time.max(problem_instance.patients[patient_id].start_time as f64);
+            nurse_trip_time = nurse_trip_time.max(
+                problem_instance.patients[patient_id].start_time as f64
+            );
             // Nurse is caring for the patient
             nurse_trip_time += problem_instance.patients[patient_id].care_time as f64;
             // If the nurse is leaving to late add the missed care time as a penalty
@@ -161,15 +173,18 @@ pub fn calculate_fitness(individual: &mut Individual, problem_instance: &Problem
             nurse_travel_time += travel_time[journey[journey.len() - 1]][0];
         }
         // add penalty if we are too late to the depot
-        to_late_to_depot_penality =
-            f64::max(0.0, nurse_trip_time - (problem_instance.depot.return_time));
+        to_late_to_depot_penality = f64::max(
+            0.0,
+            nurse_trip_time - problem_instance.depot.return_time
+        );
         combined_trip_time += nurse_travel_time;
         combined_travel_time += nurse_travel_time;
     }
-    let fitness = -combined_trip_time
-        - capacity_penalty * 100000.0
-        - missing_care_time_penalty * 10000.0
-        - to_late_to_depot_penality * 10000.0;
+    let fitness =
+        -combined_trip_time -
+        capacity_penalty * 100000.0 -
+        missing_care_time_penalty * 10000.0 -
+        to_late_to_depot_penality * 10000.0;
 
     individual.travel_time = combined_travel_time;
     individual.fitness = fitness;
