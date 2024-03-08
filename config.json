@@ -1,51 +1,61 @@
 {
   "problem_instance": "./train/train_9.json",
-  "population_initialisation": "appendHeuristic",
-  "population_size": 500,
-  "number_of_generations": 1000,
+  "population_initialisation": "random",
+  "population_size": 10000,
+  "number_of_generations": 500,
   "parent_selection": {
     "name": "tournament",
     "tournament_size": 5,
     "tournament_probability": 0.8,
-    "elitism_percentage": 0.05
+    "elitism_percentage": 0.02
   },
   "crossovers": [
     {
       "name": "partiallyMappedCrossover",
       "probability": 0.2,
+      "annealing_delta": -0.001
+    },
+    {
+      "name": "orderOneCrossover",
+      "probability": 0.2,
+      "annealing_delta": -0.001
+    },
+    {
+      "name": "edgeRecombination",
+      "probability": 0.01,
       "annealing_delta": 0.001
     }
   ],
   "mutations": [
     {
       "name": "reassignOnePatient",
-      "probability": 0.05,
-      "annealing_delta": -0.001
+      "probability": 0.1,
+      "annealing_delta": -0.0002
     },
     {
       "name": "moveWithinJourney",
-      "probability": 0.1,
-      "annealing_delta": -0.00001
+      "probability": 0.2,
+      "annealing_delta": -0.0001
     },
     {
       "name": "swapBetweenJourneys",
-      "probability": 0.1,
-      "annealing_delta": -0.00001
+      "probability": 0.2,
+      "annealing_delta": -0.0001
     },
     {
       "name": "swapWithinJourney",
-      "probability": 0.1,
-      "annealing_delta": -0.00001
+      "probability": 0.2,
+      "annealing_delta": -0.0001
     },
     {
       "name": "insertionHeuristic",
-      "probability": 0.1,
-      "annealing_delta": 0.001
+      "probability": 0.3,
+      "annealing_delta": 0.0001
     }
   ],
   "survivor_selection": {
     "name": "rouletteWheel",
-    "elitism_percentage": 0.1,
+    "elitism_percentage": 0.02,
     "combine_parents_and_offspring": true
   }
 }

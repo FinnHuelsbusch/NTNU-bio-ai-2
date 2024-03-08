@@ -1,6 +1,6 @@
 use serde::{ Deserialize, Serialize };
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct FunctionConfig {
     pub name: String,
 
@@ -23,7 +23,7 @@ pub struct FunctionConfig {
     pub combine_parents_and_offspring: Option<bool>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Config {
     pub problem_instance: String,
     pub population_initialisation: String,
