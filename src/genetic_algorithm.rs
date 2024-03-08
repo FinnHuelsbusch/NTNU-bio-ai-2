@@ -87,7 +87,7 @@ pub fn run_genetic_algorithm_instance(
         population = survivor_selection(&parents, &children, config);
 
         population.sort();
-        if population[0].travel_time < best_individual.travel_time {
+        if population[0].travel_time < best_individual.travel_time  && population[0].is_feasible(){
             best_individual = population[0].clone();
         }
 

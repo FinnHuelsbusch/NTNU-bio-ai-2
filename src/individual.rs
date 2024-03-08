@@ -41,15 +41,11 @@ impl Individual {
     }
 
     pub fn is_feasible(&self) -> bool {
-        if
+        !(
             self.missing_care_time_penalty > 0.0 ||
             self.capacity_penalty > 0.0 ||
             self.to_late_to_depot_penality > 0.0
-        {
-            false
-        } else {
-            true
-        }
+        )
     }
 
     pub fn export_to_file(&self, file_path: &str) {
@@ -92,10 +88,7 @@ pub fn is_journey_valid(journey: &Journey, problem_instance: &ProblemInstance) -
     if !journey.is_empty() {
         total_time_spent += problem_instance.travel_time[journey[journey.len() - 1]][0];
     }
-    if total_time_spent > problem_instance.depot.return_time {
-        return false;
-    }
-    true
+    total_time_spent <= problem_instance.depot.return_time
 }
 
 pub fn is_genome_valid(genome: &Genome, problem_instance: &ProblemInstance) -> bool {
