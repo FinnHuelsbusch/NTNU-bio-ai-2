@@ -1,7 +1,7 @@
 {
   "problem_instance": "./train/train_9.json",
   "population_initialisation": "appendHeuristic",
-  "population_size": 1000,
+  "population_size": 2000,
   "number_of_generations": 100,
   "parent_selection": {
     "name": "rouletteWheel",
@@ -13,6 +13,14 @@
     {
       "name": "partiallyMappedCrossover",
       "probability": 0.2
+    },
+    {
+      "name": "orderOneCrossover",
+      "probability": 0.2
+    },
+    {
+      "name": "edgeRecombination",
+      "probability": 0.6
     }
   ],
   "mutations": [
@@ -34,7 +42,7 @@
     },
     {
       "name": "insertionHeuristic",
-      "probability": 0.3
+      "probability": 0.1
     }
   ],
   "survivor_selection": {

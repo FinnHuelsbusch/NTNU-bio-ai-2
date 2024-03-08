@@ -4,7 +4,7 @@ use rand::Rng;
 
 use crate::{
     config::Config,
-    individual::{calculate_fitness, unflattened_genome, Genome, Individual},
+    individual::{ calculate_fitness, unflattened_genome, Genome, Individual },
     population::Population,
     problem_instance::ProblemInstance,
 };
@@ -21,11 +21,7 @@ fn order_one_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<
     let start: usize = rng.gen_range(0..genome_length);
     let end: usize = rng.gen_range(0..genome_length);
 
-    let (start, end) = if start > end {
-        (end, start)
-    } else {
-        (start, end)
-    };
+    let (start, end) = if start > end { (end, start) } else { (start, end) };
 
     let mut child_a: Vec<usize> = vec![0; genome_length];
     let mut child_b: Vec<usize> = vec![0; genome_length];
@@ -47,13 +43,11 @@ fn order_one_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<
             while child.contains(other_parent.get(target_index).unwrap()) {
                 target_index = (target_index + 1) % genome_length;
             }
+            child[source_index] = *other_parent[target_index];
         }
     }
 
-    (
-        unflattened_genome(&child_a, genome_a),
-        Some(unflattened_genome(&child_b, genome_b)),
-    )
+    (unflattened_genome(&child_a, genome_a), Some(unflattened_genome(&child_b, genome_b)))
 }
 
 fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
@@ -70,11 +64,7 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
     let start: usize = rng.gen_range(0..genome_length);
     let end: usize = rng.gen_range(0..genome_length);
     // make sure that start is smaller than end
-    let (start, end) = if start > end {
-        (end, start)
-    } else {
-        (start, end)
-    };
+    let (start, end) = if start > end { (end, start) } else { (start, end) };
 
     // create two children with the same length as the genomes
     let mut child_a: Vec<usize> = vec![usize::MAX; genome_length];
@@ -103,10 +93,11 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
                         .iter()
                         .position(|&x| x == parent[index_to_insert])
                         .unwrap();
-                    if (index_to_insert < start || end < index_to_insert) && // index outside of selected range
+                    if
+                        (index_to_insert < start || end < index_to_insert) && // index outside of selected range
                         !previous_indices.contains(&index_to_insert) && // index not already used -> no cycle
                         child[index_to_insert] == usize::MAX
-                    // location is not already used in child
+                        // location is not already used in child
                     {
                         child[index_to_insert] = *other_parent[i];
                         break;
@@ -131,10 +122,7 @@ fn partially_mapped_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, 
         }
     }
 
-    (
-        unflattened_genome(&child_a, genome_a),
-        Some(unflattened_genome(&child_b, genome_b)),
-    )
+    (unflattened_genome(&child_a, genome_a), Some(unflattened_genome(&child_b, genome_b)))
 }
 
 fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<Genome>) {
@@ -219,15 +207,15 @@ fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<G
 pub fn crossover(
     population: &mut Population,
     problem_instance: &ProblemInstance,
-    config: &Config,
+    config: &Config
 ) -> Population {
     let mut rng = rand::thread_rng();
     let mut children: Population = population.clone();
     for crossover_config in config.crossovers.iter() {
         // Calculate the number of crossovers which should happen for the specific config
-        let number_of_crossovers: u64 = ((config.population_size as f64)
-            * crossover_config.probability.unwrap_or(0.0))
-        .ceil() as u64;
+        let number_of_crossovers: u64 = (
+            (config.population_size as f64) * crossover_config.probability.unwrap_or(0.0)
+        ).ceil() as u64;
 
         for _ in 0..number_of_crossovers {
             let individual_index_a: usize = rng.gen_range(0..config.population_size);
@@ -238,24 +226,28 @@ pub fn crossover(
             }
 
             let child_genomes: (Genome, Option<Genome>) = match crossover_config.name.as_str() {
-                "edgeRecombination" => edge_recombination(
-                    &children[individual_index_a].genome,
-                    &children[individual_index_b].genome,
-                ),
-                "orderOneCrossover" => order_one_crossover(
-                    &children[individual_index_a].genome,
-                    &children[individual_index_b].genome,
-                ),
-                "partiallyMappedCrossover" => partially_mapped_crossover(
-                    &children[individual_index_a].genome,
-                    &children[individual_index_b].genome,
-                ),
+                "edgeRecombination" =>
+                    edge_recombination(
+                        &children[individual_index_a].genome,
+                        &children[individual_index_b].genome
+                    ),
+                "orderOneCrossover" =>
+                    order_one_crossover(
+                        &children[individual_index_a].genome,
+                        &children[individual_index_b].genome
+                    ),
+                "partiallyMappedCrossover" =>
+                    partially_mapped_crossover(
+                        &children[individual_index_a].genome,
+                        &children[individual_index_b].genome
+                    ),
 
                 // Handle the rest of cases
-                _ => panic!(
-                    "Didn't have an Implementation for selection function: {:?}",
-                    config.parent_selection.name.as_str()
-                ),
+                _ =>
+                    panic!(
+                        "Didn't have an Implementation for selection function: {:?}",
+                        config.parent_selection.name.as_str()
+                    ),
             };
 
             let mut child_a = Individual::new(child_genomes.0);
