@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use rand::Rng;
 
@@ -37,7 +37,7 @@ fn order_one_crossover(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<
         (&mut child_a, &genome_flattened_b),
         (&mut child_b, &genome_flattened_a),
     ] {
-        for i in 0..number_of_non_selected_elements {
+        for i in 0..number_of_non_selected_elements-1 {
             let source_index = (end + i + 1) % genome_length;
             let mut target_index = source_index;
             while child.contains(other_parent.get(target_index).unwrap()) {
@@ -130,19 +130,24 @@ fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<G
     let genome_flattened_a: Vec<&usize> = genome_a.iter().flatten().collect();
     let genome_flattened_b: Vec<&usize> = genome_b.iter().flatten().collect();
 
-    let genome_length: usize = genome_flattened_a.len();
-
     assert_eq!(genome_flattened_a.len(), genome_flattened_b.len());
-
-    let mut adjacency_list: Vec<Vec<usize>> = vec![Vec::new(); genome_length];
+    let genome_length: usize = genome_flattened_a.len();
+    
+    let mut adjacency_list: HashMap<usize, Vec<usize>> = HashMap::new();
 
     for index in 0..genome_length {
         let left = (index + genome_length - 1) % genome_length;
         let right = (index + 1) % genome_length;
-        adjacency_list[*genome_flattened_a[index]].push(*genome_flattened_a[left]);
-        adjacency_list[*genome_flattened_a[index]].push(*genome_flattened_a[right]);
-        adjacency_list[*genome_flattened_b[index]].push(*genome_flattened_b[left]);
-        adjacency_list[*genome_flattened_b[index]].push(*genome_flattened_b[right]);
+
+        let entry_a = adjacency_list.entry(*genome_flattened_a[index]).or_default();
+        entry_a.push(*genome_flattened_a[left]);
+        entry_a.push(*genome_flattened_a[right]);
+
+        let entry_b = adjacency_list.entry(*genome_flattened_b[index]).or_default();
+        entry_b.push(*genome_flattened_b[left]);
+        entry_b.push(*genome_flattened_b[right]);
+
+        
     }
 
     let mut rng = rand::thread_rng();
@@ -152,8 +157,9 @@ fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<G
     for _ in 0..genome_length {
         child.push(current);
 
-        for value in &mut adjacency_list {
-            value.retain(|&x| x != current);
+        // Remove current from all lists in adjacencyList to shorten the lists
+        for (_, list) in adjacency_list.iter_mut() {
+            list.retain(|&x| x != current);
         }
 
         //Examine list for current element:
@@ -164,43 +170,49 @@ fn edge_recombination(genome_a: &Genome, genome_b: &Genome) -> (Genome, Option<G
         let mut new_current: usize = usize::MAX;
         let mut seen: HashSet<usize> = HashSet::new();
 
-        for value in &mut adjacency_list[current] {
-            if seen.contains(value) {
-                new_current = *value;
-                break;
+        // check if there is one edge in the neighbors of the current node which is present twice (sigend with a plus)
+        if let Some(neighbors) = adjacency_list.get(&current) {
+            for &value in neighbors.iter() {
+                if seen.contains(&value) {
+                    new_current = value;
+                    break;
+                }
+                seen.insert(value);
             }
-            seen.insert(*value);
-        }
-
-        // choice of new current is not random if there are two list of equal length.
-        if new_current == usize::MAX {
-            let mut min_size = usize::MAX;
-            for value in &adjacency_list[current] {
-                let value_set: HashSet<&usize> = HashSet::from_iter(adjacency_list[current].iter());
-                if value_set.len() <= min_size {
-                    min_size = value_set.len();
-                    new_current = *value;
+            
+            // if there is no edge that is present twice, we have to choose the next node based on the length of the neighbors list
+            if new_current == usize::MAX {
+                // choice of new current is not random if there are two list of equal length.
+                let mut min_size = usize::MAX;
+                for value in &adjacency_list[&current] {
+                    let value_set: HashSet<&usize> = HashSet::from_iter(adjacency_list[&current].iter());
+                    if value_set.len() <= min_size {
+                        min_size = value_set.len();
+                        new_current = *value;
+                    }
                 }
             }
         }
-
-        adjacency_list.remove(current);
-
+        adjacency_list.remove(&current);
         if adjacency_list.is_empty() {
             break;
         }
-
         if new_current == usize::MAX {
-            loop {
-                new_current = *genome_flattened_a[rng.gen_range(0..genome_length)];
-                if new_current == adjacency_list.len() - 1 {
-                    break;
-                }
-            }
+            // there is no entry for the current node in the adjacency list, so we have to choose a random node
+            new_current = *adjacency_list.keys().nth(rng.gen_range(0..adjacency_list.len())).unwrap();
         }
+
+        
+
+       
         current = new_current;
     }
 
+
+    
+    // assert that the child genome is valid by using a hashset to check for duplicates
+    assert_eq!(child.len(), child.iter().collect::<HashSet<&usize>>().len());
+    
     (unflattened_genome(&child, genome_a), None)
 }
 
