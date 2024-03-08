@@ -1,7 +1,7 @@
+use serde::{Deserialize, Deserializer};
 use std::collections::HashMap;
-use serde::{ Deserialize, Deserializer };
 
-use crate::{ depot::Depot, patient::Patient };
+use crate::{depot::Depot, patient::Patient};
 
 #[derive(Debug, Deserialize)]
 pub struct ProblemInstance {
@@ -23,7 +23,8 @@ pub struct ProblemInstance {
 }
 
 fn deserialize_patients<'de, D>(deserializer: D) -> Result<HashMap<usize, Patient>, D::Error>
-    where D: Deserializer<'de>
+where
+    D: Deserializer<'de>,
 {
     struct PatientsVisitor;
 
@@ -35,7 +36,8 @@ fn deserialize_patients<'de, D>(deserializer: D) -> Result<HashMap<usize, Patien
         }
 
         fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-            where A: serde::de::MapAccess<'de>
+        where
+            A: serde::de::MapAccess<'de>,
         {
             let mut patients = HashMap::new();
 
@@ -52,11 +54,9 @@ fn deserialize_patients<'de, D>(deserializer: D) -> Result<HashMap<usize, Patien
 }
 
 pub fn initialize_problem_instance(file_path: &str) -> ProblemInstance {
-    let data = std::fs
-        ::read_to_string(file_path)
+    let data = std::fs::read_to_string(file_path)
         .expect("Unable to read problem instance. Is the file path correct?");
-    let new_instance: ProblemInstance = serde_json
-        ::from_str(&data)
+    let new_instance: ProblemInstance = serde_json::from_str(&data)
         .expect("Problem instance json was not well formatted! Did the format change?");
     new_instance
 }

@@ -2,9 +2,9 @@ use crate::{
     config::Config,
     crossover_functions::crossover,
     mutation_functions::mutate,
-    population::{ get_average_travel_time, initialize_population, Population },
+    population::{get_average_travel_time, initialize_population, Population},
     problem_instance::ProblemInstance,
-    selection_functions::{ parent_selection, survivor_selection },
+    selection_functions::{parent_selection, survivor_selection},
 };
 
 use std::io;

@@ -1,17 +1,17 @@
 use genetic_algorithm::run_genetic_algorithm_instance;
 
-use crate::{ config::initialize_config, problem_instance::initialize_problem_instance };
+use crate::{config::initialize_config, problem_instance::initialize_problem_instance};
 
-mod problem_instance;
-mod patient;
-mod depot;
 mod config;
-mod individual;
-mod population;
-mod genetic_algorithm;
-mod selection_functions;
 mod crossover_functions;
+mod depot;
+mod genetic_algorithm;
+mod individual;
 mod mutation_functions;
+mod patient;
+mod population;
+mod problem_instance;
+mod selection_functions;
 
 fn main() {
     // Load config

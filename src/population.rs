@@ -1,20 +1,17 @@
-use std::collections::HashMap;
-use rand::Rng;
-use rand::seq::SliceRandom;
 use crate::{
     config::Config,
-    individual::{ calculate_fitness, is_journey_valid, Genome, Individual },
+    individual::{calculate_fitness, is_journey_valid, Genome, Individual},
     patient::Patient,
     problem_instance::ProblemInstance,
 };
+use rand::seq::SliceRandom;
+use rand::Rng;
+use std::collections::HashMap;
 
 pub type Population = Vec<Individual>;
 
 pub fn get_average_fitness(population: &Population) -> f64 {
-    let sum: f64 = population
-        .iter()
-        .map(|individual| individual.fitness)
-        .sum();
+    let sum: f64 = population.iter().map(|individual| individual.fitness).sum();
 
     // Calculate the average
     if population.is_empty() {
@@ -70,7 +67,7 @@ fn initialize_random_population(problem_instance: &ProblemInstance, config: &Con
 // sollten wir diese appendHeuristic verwenden oder eine bessere Heuristic verwenden? (vorteil ist, dass das hier schneller ist. Ein insert braucht O(number of nurses). Bessere hätten O(number of patients * 0.5)
 fn initialize_append_heuristic_population(
     problem_instance: &ProblemInstance,
-    config: &Config
+    config: &Config,
 ) -> Population {
     let mut patients_by_end_time: HashMap<u32, Vec<Patient>> = HashMap::new();
     // fill patients_by_end_time
@@ -79,7 +76,10 @@ fn initialize_append_heuristic_population(
         if let std::collections::hash_map::Entry::Vacant(e) = patients_by_end_time.entry(end_time) {
             e.insert(vec![*patient]);
         } else {
-            patients_by_end_time.get_mut(&end_time).unwrap().push(*patient);
+            patients_by_end_time
+                .get_mut(&end_time)
+                .unwrap()
+                .push(*patient);
         }
     }
 
@@ -99,15 +99,14 @@ fn initialize_append_heuristic_population(
                 let mut smallest_detour = f64::INFINITY;
                 let mut best_position = 0;
                 for (i, journey) in genome.iter().enumerate() {
-                    let detour: f64 =
-                        if journey.is_empty() {
-                                problem_instance.travel_time[0][patient.id] +
-                                problem_instance.travel_time[patient.id][0]
-                        } else {
-                                problem_instance.travel_time[journey[journey.len() - 1]][patient.id] +
-                                problem_instance.travel_time[patient.id][0] -
-                                problem_instance.travel_time[journey[journey.len() - 1]][0]
-                        };
+                    let detour: f64 = if journey.is_empty() {
+                        problem_instance.travel_time[0][patient.id]
+                            + problem_instance.travel_time[patient.id][0]
+                    } else {
+                        problem_instance.travel_time[journey[journey.len() - 1]][patient.id]
+                            + problem_instance.travel_time[patient.id][0]
+                            - problem_instance.travel_time[journey[journey.len() - 1]][0]
+                    };
                     if detour < smallest_detour {
                         let mut updated_journey = journey.clone();
                         updated_journey.push(patient.id);
@@ -149,10 +148,9 @@ pub fn initialize_population(problem_instance: &ProblemInstance, config: &Config
         "random" => initialize_random_population(problem_instance, config),
         "appendHeuristic" => initialize_append_heuristic_population(problem_instance, config),
 
-        _ =>
-            panic!(
-                "Didn't have an Implementation for population intialisation: {:?}",
-                config.population_initialisation
-            ),
+        _ => panic!(
+            "Didn't have an Implementation for population intialisation: {:?}",
+            config.population_initialisation
+        ),
     }
 }
