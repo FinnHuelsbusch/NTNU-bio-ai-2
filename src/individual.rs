@@ -7,7 +7,7 @@ use crate::problem_instance::ProblemInstance;
 pub type Journey = Vec<usize>;
 pub type Genome = Vec<Journey>;
 
-#[derive(Debug, PartialEq, PartialOrd, Clone, Serialize)]
+#[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct Individual {
     pub genome: Genome,
     pub fitness: f64,
@@ -19,14 +19,6 @@ pub struct Individual {
     pub to_late_to_depot_penality: f64,
 }
 
-// We are going to sort individuals by their fitness
-// ! if the fitness will ever be NaN this will panic
-impl Ord for Individual {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.fitness.partial_cmp(&other.fitness).unwrap()
-    }
-}
-impl Eq for Individual {}
 
 impl Individual {
     pub fn new(genome: Genome) -> Self {

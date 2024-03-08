@@ -1,6 +1,6 @@
 {
   "problem_instance": "./train/train_9.json",
-  "population_initialisation": "appendHeuristic",
+  "population_initialisation": "random",
   "population_size": 2000,
   "number_of_generations": 100,
   "parent_selection": {

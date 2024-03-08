@@ -22,12 +22,8 @@ use std::io::Write;
 fn log_population_statistics(generation: usize, population: &Population) {
     let mut sorted_population: Population = population.clone();
     // filter sorted_population to only include individuals with a feasible solution
-    sorted_population = sorted_population
-        .iter()
-        .filter(|individual| individual.is_feasible())
-        .cloned()
-        .collect();
-    sorted_population.sort();
+    sorted_population.retain(|individual| individual.is_feasible());
+    sorted_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
 
     println!(
         "Best: {:?} Avg: {:?} Worst: {:?}",
@@ -86,7 +82,7 @@ pub fn run_genetic_algorithm_instance(
         io::stdout().flush().unwrap();
         population = survivor_selection(&parents, &children, config);
 
-        population.sort();
+        population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
         if population[0].travel_time < best_individual.travel_time  && population[0].is_feasible(){
             best_individual = population[0].clone();
         }
