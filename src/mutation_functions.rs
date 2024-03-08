@@ -1,3 +1,4 @@
+use log::warn;
 use crate::{
     config::Config,
     individual::{calculate_fitness, is_journey_valid, Genome, Individual, Journey},
@@ -60,19 +61,24 @@ fn swap_between_journeys(
     let mut target_genome: Genome = genome.clone();
     let mut rng = rand::thread_rng();
     let mut nurse_a: usize;
-    let mut nurse_b: usize;
     loop {
         nurse_a = rng.gen_range(0..problem_instance.number_of_nurses);
         if target_genome[nurse_a].len() > 0 {
             break;
         }
     }
-    loop {
-        nurse_b = rng.gen_range(0..problem_instance.number_of_nurses);
-        if nurse_b != nurse_a && target_genome[nurse_b].len() > 0 {
+    let mut nurse_b: usize = usize::MAX;
+    for (i, journey) in genome.iter().enumerate() {
+        if i != nurse_a && journey.len() > 0 {
+            nurse_b = i;
             break;
         }
     }
+    if nurse_b == usize::MAX {
+        warn!("No nurse with patients found to swap with nurse {}", nurse_a);
+        return genome.clone();
+    }
+    
     let patient_index_a: usize = rng.gen_range(0..target_genome[nurse_a].len());
     let patient_index_b: usize = rng.gen_range(0..target_genome[nurse_b].len());
     let patient_a = target_genome[nurse_a][patient_index_a];
@@ -356,12 +362,13 @@ fn insertion_heuristic(
             }
         }
         if min_detour == f64::MAX || min_detour_index == usize::MAX || nurse_id == usize::MAX {
-            panic!("No valid insertion point found for patient {}", patient_id);
+            warn!("No valid insertion point found for patient {}", patient_id);
+            return genome.clone();
         }
         target_genome[nurse_id].insert(min_detour_index, **patient_id);
     }
 
-    return target_genome;
+    target_genome
 }
 
 pub fn mutate(
