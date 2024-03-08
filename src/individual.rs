@@ -1,4 +1,4 @@
-use std::{ cmp::Ordering, collections::HashMap, fs::File, io::Write };
+use std::{ collections::HashMap, fs::File, io::Write };
 
 use serde::Serialize;
 
@@ -57,30 +57,33 @@ pub fn is_journey_valid(journey: &Journey, problem_instance: &ProblemInstance) -
 
     let mut total_time_spent = 0.0;
     let mut total_fullfilled_demand = 0_u32;
-    for (i, patient_id) in journey.iter().enumerate() {
-        if i == 0 {
-            total_time_spent += problem_instance.travel_time[0][*patient_id];
-        } else {
-            let previous_patient_id = journey[i - 1];
-            total_time_spent += problem_instance.travel_time[previous_patient_id][*patient_id];
-        }
-        if total_time_spent < (problem_instance.patients[patient_id].start_time as f64) {
-            total_time_spent = problem_instance.patients[patient_id].start_time as f64;
-        }
-        total_time_spent += problem_instance.patients[patient_id].care_time as f64;
-        if total_time_spent > (problem_instance.patients[patient_id].end_time as f64) {
+    
+    // add the driving time from the depot to the first patient
+    total_time_spent += problem_instance.travel_time[0][journey[0]];
+    
+    for (&patient_id, &next_patient_id) in journey.iter().zip(journey.iter().skip(1)) {
+
+        total_time_spent += problem_instance.travel_time[patient_id][next_patient_id];
+
+        total_time_spent = total_time_spent.max(problem_instance.patients[&patient_id].start_time as f64);
+        total_time_spent += problem_instance.patients[&patient_id].care_time as f64;
+
+        if total_time_spent > (problem_instance.patients[&patient_id].end_time as f64) {
             return false;
         }
-        total_fullfilled_demand += problem_instance.patients[patient_id].demand;
-        if total_fullfilled_demand > problem_instance.nurse_capacity {
-            return false;
-        }
+
+        total_fullfilled_demand += problem_instance.patients[&patient_id].demand;
+        
     }
-    // add the driving time from the last patient to the depot if there is at least one patient
-    if !journey.is_empty() {
-        total_time_spent += problem_instance.travel_time[journey[journey.len() - 1]][0];
+    
+    // add the driving time from the last patient to the depot
+    total_time_spent += problem_instance.travel_time[journey[journey.len() - 1]][0];
+    if total_time_spent > (problem_instance.patients[&journey[journey.len() - 1]].end_time as f64) {
+        return false;
     }
-    total_time_spent <= problem_instance.depot.return_time
+
+    let help =     total_time_spent <= problem_instance.depot.return_time    && total_fullfilled_demand <= problem_instance.nurse_capacity;
+    help
 }
 
 pub fn is_genome_valid(genome: &Genome, problem_instance: &ProblemInstance) -> bool {
