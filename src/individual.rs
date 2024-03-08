@@ -39,14 +39,9 @@ impl Individual {
     }
 
     pub fn is_feasible(&self) -> bool {
-        if self.missing_care_time_penalty > 0.0
-            || self.capacity_penalty > 0.0
-            || self.to_late_to_depot_penality > 0.0
-        {
-            false
-        }else {
-            true
-        }
+        !(self.missing_care_time_penalty > 0.0
+            || self.capacity_penalty > 0.0 
+            || self.to_late_to_depot_penality > 0.0)
         
     }
 }
@@ -81,10 +76,8 @@ pub fn is_journey_valid(journey: &Journey, problem_instance: &ProblemInstance) -
     if !journey.is_empty() {
         total_time_spent += problem_instance.travel_time[journey[journey.len() - 1]][0];
     }
-    if total_time_spent > problem_instance.depot.return_time {
-        return false;
-    }
-    true
+    total_time_spent <= problem_instance.depot.return_time
+
 }
 
 pub fn is_genome_valid(genome: &Genome, problem_instance: &ProblemInstance) -> bool {
@@ -167,10 +160,10 @@ pub fn calculate_fitness(individual: &mut Individual, problem_instance: &Problem
         combined_travel_time += nurse_travel_time;
     }
     let fitness = -combined_trip_time
-        - capacity_penalty * 100000.0
+        - capacity_penalty * 10000.0
         - missing_care_time_penalty * 10000.0
         - to_late_to_depot_penality * 10000.0;
-
+        
     individual.travel_time = combined_travel_time;
     individual.fitness = fitness;
     individual.missing_care_time_penalty = missing_care_time_penalty;
