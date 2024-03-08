@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FunctionConfig {
@@ -6,6 +6,9 @@ pub struct FunctionConfig {
 
     #[serde(default)]
     pub probability: Option<f64>,
+
+    #[serde(default)]
+    pub annealing_delta: Option<f64>,
 
     #[serde(default)]
     pub tournament_size: Option<u32>,
