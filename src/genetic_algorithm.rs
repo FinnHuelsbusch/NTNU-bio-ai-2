@@ -16,7 +16,7 @@ use crate::{
     selection_functions::{ parent_selection, survivor_selection },
 };
 
-use std::io;
+use std::{ f64::INFINITY, io };
 use std::io::Write;
 
 fn log_population_statistics(generation: usize, population: &Population) {
@@ -82,36 +82,50 @@ fn cool_down_config(generation: usize, config: &mut Config) {
 
 pub fn run_genetic_algorithm_instance(
     problem_instance: &ProblemInstance,
-    config: &mut Config
+    original_config: &mut Config
 ) -> Individual {
-    let mut population: Population = initialize_population(problem_instance, config);
+    let mut population: Population = initialize_population(problem_instance, original_config);
     let mut best_individual: Individual = population[0].clone();
+    let mut config = original_config.clone();
+
+    let mut delta = f64::MAX;
+    let mut last = -f64::MAX;
 
     for generation in 0..config.number_of_generations {
         println!("Calculating Generation: {:?}", generation);
 
         print!("SEL|");
         io::stdout().flush().unwrap();
-        let mut parents = parent_selection(&population, config);
+        let mut parents = parent_selection(&population, &config);
 
         print!("CROSS|");
         io::stdout().flush().unwrap();
-        let mut children = crossover(&mut parents, problem_instance, config);
+        let mut children = crossover(&mut parents, problem_instance, &config);
 
         print!("MUT|");
         io::stdout().flush().unwrap();
-        children = mutate(&mut children, problem_instance, config);
+        children = mutate(&mut children, problem_instance, &config);
 
         println!("SURV_SEL");
         io::stdout().flush().unwrap();
-        population = survivor_selection(&parents, &children, config);
+        population = survivor_selection(&parents, &children, &config);
 
         population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
-        if population[0].travel_time < best_individual.travel_time  && population[0].is_feasible(){
+        if population[0].travel_time < best_individual.travel_time && population[0].is_feasible() {
             best_individual = population[0].clone();
         }
 
-        cool_down_config(generation, config);
+        cool_down_config(generation, &mut config);
+
+        if generation % 10 == 0 {
+            let avg = get_average_travel_time(&population);
+            delta = (last - avg).abs();
+            last = avg;
+            if delta < 10.0 {
+                println!("Delta {:?} Reheating", delta);
+                config = original_config.clone();
+            }
+        }
 
         log_population_statistics(generation, &population);
     }
