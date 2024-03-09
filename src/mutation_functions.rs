@@ -246,13 +246,13 @@ fn insertion_heuristic(
     function_config: &FunctionConfig,
 ) -> Genome {
     let mut target_genome: Genome = genome.clone();
-    
+
     let percentage_to_slice = function_config.percentage_to_slice.unwrap_or_else(|| panic!("No percentage_to_slice found in config for insertionHeuristic"));
     let number_to_slice = (target_genome.len() as f64 * percentage_to_slice).ceil() as usize;
     let mut patient_to_insert : Vec<usize> = Vec::with_capacity(number_to_slice);
     for _ in 0..number_to_slice {
         let mut nurse_index = rand::thread_rng().gen_range(0..target_genome.len());
-        
+
         while target_genome[nurse_index].len() == 0 {
             nurse_index = rand::thread_rng().gen_range(0..genome.len());
         }
@@ -327,7 +327,8 @@ fn insertion_heuristic(
             }
         }
         if min_detour == f64::MAX || min_detour_index == usize::MAX || nurse_id == usize::MAX {
-            panic!("No valid insertion point found for patient {}", patient_id);
+            warn!("No valid insertion point found for patient {}", patient_id);
+            return genome.clone();
         }
         target_genome[nurse_id].insert(min_detour_index, *patient_id);
     }
@@ -357,7 +358,7 @@ fn lin_kernighan(
                     candidate_journey[i..=j].reverse();
                     let new_distance = is_journey_valid(&candidate_journey, problem_instance);
                     // if only one is valid, we take it otherwise we take the one with the lowest distance
-                    if new_distance && !old_distance || 
+                    if new_distance && !old_distance ||
                         (new_distance && old_distance && new_distance.1 < old_distance.1) ||
                         (!new_distance && !old_distance && new_distance.1 < old_distance.1)
                         {
