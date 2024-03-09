@@ -43,13 +43,17 @@ fn log_population_statistics(generation: usize, population: &Population) {
         "Worst"
     );
 
-    println!(
-        "{:<30} {:<15.2} {:<15.2} {:<15.2}",
-        "Feasible Population",
-        feasible_population[0].travel_time,
-        get_average_travel_time(&feasible_population),
-        feasible_population[feasible_population.len() - 1].travel_time
-    );
+    if feasible_population.is_empty() {
+        println!("No feasible solutions in the population. No statistics to log.");
+    } else { 
+        println!(
+            "{:<30} {:<15.2} {:<15.2} {:<15.2}",
+            "Feasible Population",
+            feasible_population[0].travel_time,
+            get_average_travel_time(&feasible_population),
+            feasible_population[feasible_population.len() - 1].travel_time
+        );
+    }
 
     println!(
         "{:<30} {:<15.2} {:<15.2} {:<15.2}",
@@ -66,13 +70,17 @@ fn log_population_statistics(generation: usize, population: &Population) {
     
     println!("Fitness statistics:");
     
-    println!(
-        "{:<30} {:<15.2} {:<15.2} {:<15.2}",
-        "Feasible Population",
-        feasible_population[0].fitness,
-        get_average_fitness(&feasible_population),
-        feasible_population[feasible_population.len() - 1].fitness
-    );
+    if feasible_population.is_empty() {
+        println!("No feasible solutions in the population. No statistics to log.");
+    } else {
+        println!(
+            "{:<30} {:<15.2} {:<15.2} {:<15.2}",
+            "Feasible Population",
+            feasible_population[0].fitness,
+            get_average_fitness(&feasible_population),
+            feasible_population[feasible_population.len() - 1].fitness
+        );
+    }
     
     println!(
         "{:<30} {:<15.2} {:<15.2} {:<15.2}",
