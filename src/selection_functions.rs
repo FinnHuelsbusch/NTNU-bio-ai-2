@@ -93,9 +93,7 @@ auto tournamentSelection(const Population &population, const FunctionParameters 
 }
  */
 
-fn tournament_selection(population: &Population, population_size: usize, config: &Config) -> Population {
-    let tournament_size = config.parent_selection.tournament_size.unwrap();
-    let tournament_probability = config.parent_selection.tournament_probability.unwrap();
+fn tournament_selection(population: &Population, population_size: usize, tournament_size: usize, tournament_probability: f64) -> Population {
     let mut new_population: Population = Vec::with_capacity(population_size);
     let mut rng = rand::thread_rng();
 
@@ -162,7 +160,7 @@ pub fn parent_selection(population: &Population, config: &Config) -> Population 
             roulette_wheel_selection(&population, config.population_size - number_of_elites)
         },
         "tournament" => {
-            tournament_selection(&population,config.population_size - number_of_elites, config)
+            tournament_selection(&population,config.population_size - number_of_elites, config.parent_selection.tournament_size.unwrap(), config.parent_selection.tournament_probability.unwrap())
         },
         // Handle the rest of cases
         _ => panic!(
@@ -217,7 +215,7 @@ pub fn survivor_selection(
             full_replacement_selection(parents, children, config.population_size - number_of_elites)
         },
         "tournament" => {
-            tournament_selection(&selection_population,config.population_size - number_of_elites, config)
+            tournament_selection(&selection_population,config.population_size - number_of_elites, config.survivor_selection.tournament_size.unwrap(), config.survivor_selection.tournament_probability.unwrap())
         },
         _ => panic!(
             "Didn't have an Implementation for selection function: {:?}",
