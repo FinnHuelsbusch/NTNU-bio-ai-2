@@ -36,6 +36,8 @@ pub struct Config {
     pub crossovers: Vec<FunctionConfig>,
     pub mutations: Vec<FunctionConfig>,
     pub survivor_selection: FunctionConfig,
+    pub log_file: Option<String>,
+    pub output_file: Option<String>
 }
 
 pub fn initialize_config(file_path: &str) -> Config {
