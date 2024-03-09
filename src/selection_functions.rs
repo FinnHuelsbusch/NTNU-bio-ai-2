@@ -141,7 +141,7 @@ fn full_replacement_selection(
 }
 
 pub fn parent_selection(population: &Population, config: &Config) -> Population {
-    let number_of_elites = (
+    let mut number_of_elites = (
         config.parent_selection.elitism_percentage.unwrap_or(0.0) * (config.population_size as f64)
     ).ceil() as usize;
     assert!(number_of_elites < config.population_size);
@@ -152,6 +152,7 @@ pub fn parent_selection(population: &Population, config: &Config) -> Population 
         elite_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
 
         if elite_population.len() >= number_of_elites {
+            number_of_elites = 0;
             // Add the elites to the new population
             for i in 0..number_of_elites {
                 new_population.push(elite_population[i].clone());
@@ -198,17 +199,19 @@ pub fn survivor_selection(
     selection_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
 
     let mut new_population: Population = Vec::with_capacity(config.population_size);
-    let number_of_elites = (
+    let mut number_of_elites = (
         config.survivor_selection.elitism_percentage.unwrap_or(0.0) *
         (config.population_size as f64)
     ).ceil() as usize;
     assert!(number_of_elites < config.population_size);
+
     if number_of_elites > 0 {
         let mut elite_population: Population = selection_population.clone();
         elite_population.retain(|x| x.is_feasible());
         elite_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
 
         if elite_population.len() >= number_of_elites {
+            number_of_elites = 0;
             // Add the elites to the new population
             for i in 0..number_of_elites {
                 new_population.push(elite_population[i].clone());
