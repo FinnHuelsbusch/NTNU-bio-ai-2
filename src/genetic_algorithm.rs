@@ -1,16 +1,11 @@
-use log::{info, warn};
+use log::{ info, warn };
 
 use crate::{
     config::{ Config },
     crossover_functions::crossover,
     individual::{ Individual },
     mutation_functions::mutate,
-    population::{
-        get_average_fitness,
-        get_average_travel_time,
-        initialize_population,
-        Population,
-    },
+    population::{ get_average_fitness, get_average_travel_time, initialize_population, Population },
     problem_instance::ProblemInstance,
     selection_functions::{ parent_selection, survivor_selection },
 };
@@ -22,11 +17,10 @@ fn log_population_statistics(generation: usize, population: &Population) {
     let mut feasible_population: Population = population.clone();
     // filter sorted_population to only include individuals with a feasible solution
     feasible_population.retain(|individual| individual.is_feasible());
-    if feasible_population.is_empty(){
+    if feasible_population.is_empty() {
         warn!("No feasible solutions in the population. No statistics to log.");
         println!("No feasible solutions in the population. No statistics to log.");
     }
-
 
     // Travel time statistics
     // sort population by fitness
@@ -35,17 +29,9 @@ fn log_population_statistics(generation: usize, population: &Population) {
     feasible_population.sort_unstable_by(|a, b| b.travel_time.partial_cmp(&a.travel_time).unwrap());
 
     println!("Travel Time statistics:");
-    println!(
-        "{:<30} {:<15} {:<15} {:<15}",
-        "Statistic",
-        "Best",
-        "Avg",
-        "Worst"
-    );
+    println!("{:<30} {:<15} {:<15} {:<15}", "Statistic", "Best", "Avg", "Worst");
 
-    if feasible_population.is_empty() {
-        println!("No feasible solutions in the population. No statistics to log.");
-    } else { 
+    if !feasible_population.is_empty() {
         println!(
             "{:<30} {:<15.2} {:<15.2} {:<15.2}",
             "Feasible Population",
@@ -62,17 +48,15 @@ fn log_population_statistics(generation: usize, population: &Population) {
         get_average_travel_time(&population),
         sorted_population[population.len() - 1].travel_time
     );
-    
+
     // Fitness statistics
     // sort population by fitness
     sorted_population.sort_unstable_by(|a, b| a.fitness.partial_cmp(&b.fitness).unwrap());
     feasible_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
-    
+
     println!("Fitness statistics:");
-    
-    if feasible_population.is_empty() {
-        println!("No feasible solutions in the population. No statistics to log.");
-    } else {
+
+    if !feasible_population.is_empty() {
         println!(
             "{:<30} {:<15.2} {:<15.2} {:<15.2}",
             "Feasible Population",
@@ -81,16 +65,14 @@ fn log_population_statistics(generation: usize, population: &Population) {
             feasible_population[feasible_population.len() - 1].fitness
         );
     }
-    
+
     println!(
-        "{:<30} {:<15.2} {:<15.2} {:<15.2}",
+        "{:<30} {:<15.2} {:<15.2} {:<15.2} \n",
         "Population",
         population[0].fitness,
         get_average_fitness(&population),
         sorted_population[population.len() - 1].fitness
     );
-    
-    
 
     let min_travel_time_individual = population
         .iter()
