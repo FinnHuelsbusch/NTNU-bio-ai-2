@@ -236,7 +236,7 @@ fn validate_journey_if_patient_is_inserted(
     }
     let mut journey_copy = journey.clone();
     journey_copy.insert(insertion_point, patient_id);
-    return is_journey_valid(&journey_copy, problem_instance);
+    return is_journey_valid(&journey_copy, problem_instance).0;
 }
 
 fn insertion_heuristic(

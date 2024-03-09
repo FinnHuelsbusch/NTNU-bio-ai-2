@@ -50,11 +50,12 @@ impl Individual {
     }
 }
 
-pub fn is_journey_valid(journey: &Journey, problem_instance: &ProblemInstance) -> bool {
+pub fn is_journey_valid(journey: &Journey, problem_instance: &ProblemInstance) -> (bool, f64) {
     if journey.is_empty() {
-        return true;
+        return (true, 0.0);
     }
 
+    let mut is_valid = true;
     let mut total_time_spent = 0.0;
     let mut total_fullfilled_demand = 0_u32;
     
@@ -69,7 +70,7 @@ pub fn is_journey_valid(journey: &Journey, problem_instance: &ProblemInstance) -
         total_time_spent += problem_instance.patients[&patient_id].care_time as f64;
 
         if total_time_spent > (problem_instance.patients[&patient_id].end_time as f64) {
-            return false;
+            is_valid = false;
         }
 
         total_fullfilled_demand += problem_instance.patients[&patient_id].demand;
@@ -79,11 +80,10 @@ pub fn is_journey_valid(journey: &Journey, problem_instance: &ProblemInstance) -
     // add the driving time from the last patient to the depot
     total_time_spent += problem_instance.travel_time[journey[journey.len() - 1]][0];
     if total_time_spent > (problem_instance.patients[&journey[journey.len() - 1]].end_time as f64) {
-        return false;
+        is_valid = false;
     }
 
-    let help =     total_time_spent <= problem_instance.depot.return_time    && total_fullfilled_demand <= problem_instance.nurse_capacity;
-    help
+    (is_valid && total_time_spent <= problem_instance.depot.return_time && total_fullfilled_demand <= problem_instance.nurse_capacity, total_time_spent)
 }
 
 pub fn is_genome_valid(genome: &Genome, problem_instance: &ProblemInstance) -> bool {
@@ -99,7 +99,7 @@ pub fn is_genome_valid(genome: &Genome, problem_instance: &ProblemInstance) -> b
                 visited_patients.insert(*patient_id, true);
             }
         }
-        if !is_journey_valid(journey, problem_instance) {
+        if !is_journey_valid(journey, problem_instance).0 {
             is_valid = false;
             // TODO: log error message
         }

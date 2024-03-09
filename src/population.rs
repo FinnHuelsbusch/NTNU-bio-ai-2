@@ -110,7 +110,7 @@ fn initialize_append_heuristic_population(
                     if detour < smallest_detour {
                         let mut updated_journey = journey.clone();
                         updated_journey.push(patient.id);
-                        if is_journey_valid(&updated_journey, problem_instance) {
+                        if is_journey_valid(&updated_journey, problem_instance).0 {
                             smallest_detour = detour;
                             best_position = i;
                         }
