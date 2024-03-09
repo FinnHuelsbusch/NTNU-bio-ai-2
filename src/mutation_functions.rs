@@ -6,6 +6,7 @@ use crate::{
     problem_instance::ProblemInstance,
 };
 use rand::Rng;
+use crate::config::FunctionConfig;
 
 fn reassign_one_patient(
     genome: &Genome,
@@ -242,31 +243,43 @@ fn validate_journey_if_patient_is_inserted(
 fn insertion_heuristic(
     genome: &Genome,
     problem_instance: &ProblemInstance,
-    _config: &Config,
+    function_config: &FunctionConfig,
 ) -> Genome {
-    let mut target_genome: Genome = vec![vec![]; problem_instance.number_of_nurses];
+    let mut target_genome: Genome = genome.clone();
+    
+    let percentage_to_slice = function_config.percentage_to_slice.unwrap_or_else(|| panic!("No percentage_to_slice found in config for insertionHeuristic"));
+    let number_to_slice = (target_genome.len() as f64 * percentage_to_slice).ceil() as usize;
+    let mut patient_to_insert : Vec<usize> = Vec::with_capacity(number_to_slice);
+    for _ in 0..number_to_slice {
+        let mut nurse_index = rand::thread_rng().gen_range(0..target_genome.len());
+        
+        while target_genome[nurse_index].len() == 0 {
+            nurse_index = rand::thread_rng().gen_range(0..genome.len());
+        }
+        let journey_index = rand::thread_rng().gen_range(0..target_genome[nurse_index].len());
+        patient_to_insert.push(target_genome[nurse_index].remove(journey_index));
+    }
 
-    let unflattened_genome: Vec<&usize> = genome.iter().flatten().collect();
-    for patient_id in unflattened_genome.iter() {
+    for patient_id in patient_to_insert.iter() {
         let mut min_detour = f64::MAX;
         let mut min_detour_index = usize::MAX;
         let mut nurse_id = usize::MAX;
         for (nurse, _) in target_genome.iter().enumerate() {
             let current_journey: &Journey = &target_genome[nurse];
             if current_journey.is_empty() {
-                min_detour = problem_instance.travel_time[0][**patient_id]
-                    + problem_instance.travel_time[**patient_id][0];
+                min_detour = problem_instance.travel_time[0][*patient_id]
+                    + problem_instance.travel_time[*patient_id][0];
                 min_detour_index = 0;
                 nurse_id = nurse;
             } else {
                 // calculate detour if patient is inserted between first patient and depot
-                let detour: f64 = problem_instance.travel_time[0][**patient_id]
-                    + problem_instance.travel_time[**patient_id][current_journey[0]]
+                let detour: f64 = problem_instance.travel_time[0][*patient_id]
+                    + problem_instance.travel_time[*patient_id][current_journey[0]]
                     - problem_instance.travel_time[0][current_journey[0]];
                 if detour < min_detour
                     && validate_journey_if_patient_is_inserted(
                         current_journey,
-                        **patient_id,
+                        *patient_id,
                         0,
                         problem_instance,
                     )
@@ -278,13 +291,13 @@ fn insertion_heuristic(
                 // calculate detour between patients the trip back to the depot is not considered
                 for i in 0..current_journey.len() - 1 {
                     let detour: f64 = problem_instance.travel_time[current_journey[i]]
-                        [**patient_id]
-                        + problem_instance.travel_time[**patient_id][current_journey[i + 1]]
+                        [*patient_id]
+                        + problem_instance.travel_time[*patient_id][current_journey[i + 1]]
                         - problem_instance.travel_time[current_journey[i]][current_journey[i + 1]];
                     if detour < min_detour
                         && validate_journey_if_patient_is_inserted(
                             current_journey,
-                            **patient_id,
+                            *patient_id,
                             i + 1,
                             problem_instance,
                         )
@@ -296,13 +309,13 @@ fn insertion_heuristic(
                 }
                 // calculate detour if patient is inserted between last patient and depot
                 let detour: f64 = problem_instance.travel_time
-                    [current_journey[current_journey.len() - 1]][**patient_id]
-                    + problem_instance.travel_time[**patient_id][0]
+                    [current_journey[current_journey.len() - 1]][*patient_id]
+                    + problem_instance.travel_time[*patient_id][0]
                     - problem_instance.travel_time[current_journey[current_journey.len() - 1]][0];
                 if detour < min_detour
                     && validate_journey_if_patient_is_inserted(
                         current_journey,
-                        **patient_id,
+                        *patient_id,
                         current_journey.len(),
                         problem_instance,
                     )
@@ -315,9 +328,8 @@ fn insertion_heuristic(
         }
         if min_detour == f64::MAX || min_detour_index == usize::MAX || nurse_id == usize::MAX {
             panic!("No valid insertion point found for patient {}", patient_id);
-            return genome.clone();
         }
-        target_genome[nurse_id].insert(min_detour_index, **patient_id);
+        target_genome[nurse_id].insert(min_detour_index, *patient_id);
     }
 
     target_genome
@@ -408,7 +420,7 @@ pub fn mutate(
                 "insertionHeuristic" => insertion_heuristic(
                     &children[individual_index].genome,
                     problem_instance,
-                    config,
+                    &mutation_config
                 ),
                 /*
                 "linKernighan" => lin_kernighan(
