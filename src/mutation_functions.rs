@@ -323,6 +323,44 @@ fn insertion_heuristic(
     target_genome
 }
 
+fn lin_kernighan(
+    genome: &Genome,
+    problem_instance: &ProblemInstance,
+    _config: &Config,
+) -> Genome {
+    let mut target_genome: Genome = genome.clone();
+
+
+    for journey in target_genome.iter_mut() {
+        if journey.len() < 2 {
+            continue;
+        }
+        let mut improvement = true;
+        let mut old_distance = is_journey_valid(&journey, problem_instance);
+        while improvement {
+            improvement = false;
+            for i in 0..journey.len() - 1 {
+                for j in i + 1..journey.len() {
+                    let mut candidate_journey = journey.clone();
+                    candidate_journey[i..=j].reverse();
+                    let new_distance = is_journey_valid(&candidate_journey, problem_instance);
+                    // if only one is valid, we take it otherwise we take the one with the lowest distance
+                    if new_distance.0 && !old_distance.0 || 
+                        (new_distance.0 && old_distance.0 && new_distance.1 < old_distance.1) ||
+                        (!new_distance.0 && !old_distance.0 && new_distance.1 < old_distance.1)
+                        {
+                        improvement = true;
+                        old_distance = new_distance;
+                    }
+                }
+            }
+
+        }
+    }
+
+    target_genome
+}
+
 pub fn mutate(
     population: &mut Population,
     problem_instance: &ProblemInstance,
@@ -368,6 +406,11 @@ pub fn mutate(
                     split_journey(&children[individual_index].genome, problem_instance, config)
                 }
                 "insertionHeuristic" => insertion_heuristic(
+                    &children[individual_index].genome,
+                    problem_instance,
+                    config,
+                ),
+                "linKernighan" => lin_kernighan(
                     &children[individual_index].genome,
                     problem_instance,
                     config,
