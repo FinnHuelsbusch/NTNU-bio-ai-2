@@ -152,7 +152,7 @@ pub fn parent_selection(population: &Population, config: &Config) -> Population 
         for i in 0..number_of_elites {
             new_population.push(elite_population[i].clone());
         }
-        
+
     }
     let selected_population: Population = match config.parent_selection.name.as_str() {
         // Match a single value
@@ -197,7 +197,7 @@ pub fn survivor_selection(
         .ceil() as usize;
     assert!(number_of_elites < config.population_size);
     if number_of_elites > 0 {
-        let mut  elite_population: Population  = selection_population.clone(); 
+        let mut  elite_population: Population  = selection_population.clone();
         elite_population.retain(|x| x.is_feasible());
         elite_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
         for i in 0..number_of_elites {
@@ -215,7 +215,9 @@ pub fn survivor_selection(
             full_replacement_selection(parents, children, config.population_size - number_of_elites)
         },
         "tournament" => {
-            tournament_selection(&selection_population,config.population_size - number_of_elites, config.survivor_selection.tournament_size.unwrap(), config.survivor_selection.tournament_probability.unwrap())
+            tournament_selection(&selection_population,config.population_size - number_of_elites, 
+                                 config.survivor_selection.tournament_size.unwrap_or_else(|| panic!("You need to specify the tournament size if you are using tournament selection for survivor selection.")),
+                                 config.survivor_selection.tournament_probability.unwrap_or_else(|| panic!("You need to specify the tournament probability if you are using tournament selection for survivor selection.")))
         },
         _ => panic!(
             "Didn't have an Implementation for selection function: {:?}",
