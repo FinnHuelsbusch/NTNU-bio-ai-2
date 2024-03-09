@@ -44,15 +44,15 @@ fn log_population_statistics(generation: usize, population: &Population) {
     println!(
         "{:<30} {:<15.2} {:<15.2} {:<15.2}",
         "Population",
-        population[0].travel_time,
-        get_average_travel_time(&population),
-        sorted_population[population.len() - 1].travel_time
+        sorted_population[0].travel_time,
+        get_average_travel_time(&sorted_population),
+        sorted_population[sorted_population.len() - 1].travel_time
     );
 
     // Fitness statistics
     // sort population by fitness
-    sorted_population.sort_unstable_by(|a, b| a.fitness.partial_cmp(&b.fitness).unwrap());
-    feasible_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
+    sorted_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
+    feasible_population.sort_unstable_by(|a, b| a.fitness.partial_cmp(&b.fitness).unwrap());
 
     println!("Fitness statistics:");
 
@@ -69,9 +69,9 @@ fn log_population_statistics(generation: usize, population: &Population) {
     println!(
         "{:<30} {:<15.2} {:<15.2} {:<15.2} \n",
         "Population",
-        population[0].fitness,
-        get_average_fitness(&population),
-        sorted_population[population.len() - 1].fitness
+        sorted_population[0].fitness,
+        get_average_fitness(&sorted_population),
+        sorted_population[sorted_population.len() - 1].fitness
     );
 
     let min_travel_time_individual = population
