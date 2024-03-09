@@ -51,11 +51,6 @@
       "name": "insertionHeuristic",
       "probability": 0.9,
       "annealing_delta": 0.0001
-    },
-    {
-      "name": "linKernighan",
-      "probability": 0.00,
-      "annealing_delta": 0.0001
     }
   ],
   "survivor_selection": {

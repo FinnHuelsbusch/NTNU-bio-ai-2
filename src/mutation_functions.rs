@@ -236,7 +236,7 @@ fn validate_journey_if_patient_is_inserted(
     }
     let mut journey_copy = journey.clone();
     journey_copy.insert(insertion_point, patient_id);
-    return is_journey_valid(&journey_copy, problem_instance).0;
+    return is_journey_valid(&journey_copy, problem_instance);
 }
 
 fn insertion_heuristic(
@@ -322,7 +322,7 @@ fn insertion_heuristic(
 
     target_genome
 }
-
+/*
 fn lin_kernighan(
     genome: &Genome,
     problem_instance: &ProblemInstance,
@@ -345,9 +345,9 @@ fn lin_kernighan(
                     candidate_journey[i..=j].reverse();
                     let new_distance = is_journey_valid(&candidate_journey, problem_instance);
                     // if only one is valid, we take it otherwise we take the one with the lowest distance
-                    if new_distance.0 && !old_distance.0 || 
-                        (new_distance.0 && old_distance.0 && new_distance.1 < old_distance.1) ||
-                        (!new_distance.0 && !old_distance.0 && new_distance.1 < old_distance.1)
+                    if new_distance && !old_distance || 
+                        (new_distance && old_distance && new_distance.1 < old_distance.1) ||
+                        (!new_distance && !old_distance && new_distance.1 < old_distance.1)
                         {
                         improvement = true;
                         old_distance = new_distance;
@@ -359,7 +359,7 @@ fn lin_kernighan(
     }
 
     target_genome
-}
+}*/
 
 pub fn mutate(
     population: &mut Population,
@@ -410,11 +410,12 @@ pub fn mutate(
                     problem_instance,
                     config,
                 ),
+                /*
                 "linKernighan" => lin_kernighan(
                     &children[individual_index].genome,
                     problem_instance,
                     config,
-                ),
+                ),*/
                 _ => panic!(
                     "Didn't have an Implementation for mutation function: {:?}",
                     mutation_config.name.as_str()
