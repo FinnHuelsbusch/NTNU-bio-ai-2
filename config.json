@@ -5,8 +5,8 @@
   "number_of_generations": 500,
   "parent_selection": {
     "name": "tournament",
-    "tournament_size": 5,
-    "tournament_probability": 0.8,
+    "tournament_size": 10,
+    "tournament_probability": 0.5,
     "elitism_percentage": 0.02
   },
   "crossovers": [
@@ -49,13 +49,20 @@
     },
     {
       "name": "insertionHeuristic",
-      "probability": 0.3,
+      "probability": 0.05,
+      "annealing_delta": 0.0001
+    },
+    {
+      "name": "linKernighan",
+      "probability": 0.01,
       "annealing_delta": 0.0001
     }
   ],
   "survivor_selection": {
-    "name": "rouletteWheel",
+    "name": "tournament",
     "elitism_percentage": 0.02,
-    "combine_parents_and_offspring": true
+    "combine_parents_and_offspring": true,
+    "tournament_size": 10,
+    "tournament_probability": 0.5
   }
 }

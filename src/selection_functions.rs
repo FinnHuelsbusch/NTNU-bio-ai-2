@@ -152,11 +152,12 @@ pub fn parent_selection(population: &Population, config: &Config) -> Population 
         elite_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
 
         if elite_population.len() >= number_of_elites {
-            number_of_elites = 0;
             // Add the elites to the new population
             for i in 0..number_of_elites {
                 new_population.push(elite_population[i].clone());
             }
+        } else {
+            number_of_elites = 0;
         }
     }
     let selected_population: Population = match config.parent_selection.name.as_str() {
@@ -211,11 +212,12 @@ pub fn survivor_selection(
         elite_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
 
         if elite_population.len() >= number_of_elites {
-            number_of_elites = 0;
             // Add the elites to the new population
             for i in 0..number_of_elites {
                 new_population.push(elite_population[i].clone());
             }
+        } else {
+            number_of_elites = 0;
         }
     }
 
