@@ -19,22 +19,70 @@ use std::{ io };
 use std::io::Write;
 
 fn log_population_statistics(generation: usize, population: &Population) {
-    let mut sorted_population: Population = population.clone();
+    let mut feasible_population: Population = population.clone();
     // filter sorted_population to only include individuals with a feasible solution
-    sorted_population.retain(|individual| individual.is_feasible());
-    if sorted_population.is_empty(){
+    feasible_population.retain(|individual| individual.is_feasible());
+    if feasible_population.is_empty(){
         warn!("No feasible solutions in the population. No statistics to log.");
         println!("No feasible solutions in the population. No statistics to log.");
-        return;
     }
-    sorted_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
+
+
+    // Travel time statistics
+    // sort population by fitness
+    let mut sorted_population = population.clone();
+    sorted_population.sort_unstable_by(|a, b| a.travel_time.partial_cmp(&b.travel_time).unwrap());
+    feasible_population.sort_unstable_by(|a, b| b.travel_time.partial_cmp(&a.travel_time).unwrap());
+
+    println!("Travel Time statistics:");
+    println!(
+        "{:<30} {:<15} {:<15} {:<15}",
+        "Statistic",
+        "Best",
+        "Avg",
+        "Worst"
+    );
 
     println!(
-        "Best: {:?} Avg: {:?} Worst: {:?}",
-        sorted_population[0].travel_time,
-        get_average_travel_time(population),
-        sorted_population[sorted_population.len() - 1].travel_time
+        "{:<30} {:<15.2} {:<15.2} {:<15.2}",
+        "Feasible Population",
+        feasible_population[0].travel_time,
+        get_average_travel_time(&feasible_population),
+        feasible_population[feasible_population.len() - 1].travel_time
     );
+
+    println!(
+        "{:<30} {:<15.2} {:<15.2} {:<15.2}",
+        "Population",
+        population[0].travel_time,
+        get_average_travel_time(&population),
+        sorted_population[population.len() - 1].travel_time
+    );
+    
+    // Fitness statistics
+    // sort population by fitness
+    sorted_population.sort_unstable_by(|a, b| a.fitness.partial_cmp(&b.fitness).unwrap());
+    feasible_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
+    
+    println!("Fitness statistics:");
+    
+    println!(
+        "{:<30} {:<15.2} {:<15.2} {:<15.2}",
+        "Feasible Population",
+        feasible_population[0].fitness,
+        get_average_fitness(&feasible_population),
+        feasible_population[feasible_population.len() - 1].fitness
+    );
+    
+    println!(
+        "{:<30} {:<15.2} {:<15.2} {:<15.2}",
+        "Population",
+        population[0].fitness,
+        get_average_fitness(&population),
+        sorted_population[population.len() - 1].fitness
+    );
+    
+    
 
     let min_travel_time_individual = population
         .iter()
@@ -117,6 +165,7 @@ pub fn run_genetic_algorithm_instance(
         population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
         if population[0].travel_time < best_individual.travel_time && population[0].is_feasible() {
             best_individual = population[0].clone();
+            info!("New best individual. Genome: {:?}", best_individual.genome);
         }
 
         cool_down_config(generation, &mut config);

@@ -146,13 +146,15 @@ pub fn parent_selection(population: &Population, config: &Config) -> Population 
     assert!(number_of_elites < config.population_size);
     let mut new_population: Population = Vec::with_capacity(config.population_size);
     if number_of_elites > 0 {
-        let mut sorted_population: Population = population.clone();
-        sorted_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
+        let mut elite_population: Population = population.clone();
+        elite_population.retain(|x| x.is_feasible());
+        elite_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
 
         // Add the elites to the new population
         for i in 0..number_of_elites {
-            new_population.push(sorted_population[i].clone());
+            new_population.push(elite_population[i].clone());
         }
+        
     }
     let selected_population: Population = match config.parent_selection.name.as_str() {
         // Match a single value
@@ -197,8 +199,11 @@ pub fn survivor_selection(
         .ceil() as usize;
     assert!(number_of_elites < config.population_size);
     if number_of_elites > 0 {
+        let mut  elite_population: Population  = selection_population.clone(); 
+        elite_population.retain(|x| x.is_feasible());
+        elite_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
         for i in 0..number_of_elites {
-            new_population.push(selection_population[i].clone());
+            new_population.push(elite_population[i].clone());
         }
     }
 
