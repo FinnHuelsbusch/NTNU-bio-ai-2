@@ -25,7 +25,7 @@ fn log_population_statistics(generation: usize, population: &Population) {
     // Travel time statistics
     // sort population by fitness
     let mut sorted_population = population.clone();
-    sorted_population.sort_unstable_by(|a, b| a.fitness.partial_cmp(&b.fitness).unwrap());
+    sorted_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
     feasible_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
 
     println!("Travel Time statistics:");
@@ -52,7 +52,7 @@ fn log_population_statistics(generation: usize, population: &Population) {
     // Fitness statistics
     // sort population by fitness
     sorted_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
-    feasible_population.sort_unstable_by(|a, b| a.fitness.partial_cmp(&b.fitness).unwrap());
+    feasible_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
 
     println!("Fitness statistics:");
 
