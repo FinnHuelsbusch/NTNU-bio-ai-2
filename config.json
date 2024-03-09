@@ -49,12 +49,12 @@
     },
     {
       "name": "insertionHeuristic",
-      "probability": 0.05,
+      "probability": 0.9,
       "annealing_delta": 0.0001
     },
     {
       "name": "linKernighan",
-      "probability": 0.01,
+      "probability": 0.00,
       "annealing_delta": 0.0001
     }
   ],
