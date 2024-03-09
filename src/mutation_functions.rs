@@ -314,7 +314,7 @@ fn insertion_heuristic(
             }
         }
         if min_detour == f64::MAX || min_detour_index == usize::MAX || nurse_id == usize::MAX {
-            warn!("No valid insertion point found for patient {}", patient_id);
+            panic!("No valid insertion point found for patient {}", patient_id);
             return genome.clone();
         }
         target_genome[nurse_id].insert(min_detour_index, **patient_id);
