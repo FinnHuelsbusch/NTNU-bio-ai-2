@@ -15,7 +15,7 @@ use crate::{
     selection_functions::{ parent_selection, survivor_selection },
 };
 
-use std::{ f64::INFINITY, io };
+use std::{ io };
 use std::io::Write;
 
 fn log_population_statistics(generation: usize, population: &Population) {
@@ -92,7 +92,7 @@ pub fn run_genetic_algorithm_instance(
     let mut best_individual: Individual = population[0].clone();
     let mut config = original_config.clone();
 
-    let mut delta = f64::MAX;
+    let mut delta;
     let mut last = -f64::MAX;
 
     for generation in 0..config.number_of_generations {

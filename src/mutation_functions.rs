@@ -78,7 +78,7 @@ fn swap_between_journeys(
         warn!("No nurse with patients found to swap with nurse {}", nurse_a);
         return genome.clone();
     }
-    
+
     let patient_index_a: usize = rng.gen_range(0..target_genome[nurse_a].len());
     let patient_index_b: usize = rng.gen_range(0..target_genome[nurse_b].len());
     let patient_a = target_genome[nurse_a][patient_index_a];
@@ -181,43 +181,6 @@ fn two_opt(genome: &Genome, problem_instance: &ProblemInstance, _config: &Config
     return target_genome;
 }
 
-// auto splitJourney(Genome &genome, const FunctionParameters &parameters) -> Genome{
-//     auto logger = spdlog::get("main_logger");
-//     logger->trace("Starting splitJourney mutation");
-//     RandomGenerator& rng = RandomGenerator::getInstance();
-//     int destinationNurse = -1;
-//     for (int i = 0; i < genome.size(); i++){
-//         if (genome[i].size() == 0){
-//             destinationNurse = i;
-//             break;
-//         }
-//     }
-//     if (destinationNurse == -1){
-//         logger->info("No nurse with 0 patients found --> returning original genome");
-//         return genome;
-//     }
-//     int sourceNurse;
-//     do{
-//         sourceNurse = rng.generateRandomInt(0, genome.size() - 1);
-//     }while(genome[sourceNurse].size() < 2);
-//     // split at the longest travel time
-//     double longestTravelTime = -1;
-//     int splitIndex = -1;
-//     ProblemInstance problemInstance = std::get<ProblemInstance>(parameters.at("problem_instance"));
-//     for (int i = 0; i < genome[sourceNurse].size() - 1; i++){
-//         double travelTime = problemInstance.travelTime[genome[sourceNurse][i]][genome[sourceNurse][i+1]];
-//         if (travelTime > longestTravelTime){
-//             longestTravelTime = travelTime;
-//             splitIndex = i;
-//         }
-//     }
-//     Journey newJourney;
-//     newJourney.insert(newJourney.begin(), genome[sourceNurse].begin() + splitIndex + 1, genome[sourceNurse].end());
-//     genome[destinationNurse] = newJourney;
-//     genome[sourceNurse].erase(genome[sourceNurse].begin() + splitIndex + 1, genome[sourceNurse].end());
-//     return genome;
-// }
-
 fn split_journey(genome: &Genome, problem_instance: &ProblemInstance, _config: &Config) -> Genome {
     let mut target_genome: Genome = Vec::new();
     let mut rng = rand::thread_rng();
@@ -261,17 +224,6 @@ fn split_journey(genome: &Genome, problem_instance: &ProblemInstance, _config: &
     target_genome[source_nurse] = genome[source_nurse][..split_index + 1].to_vec();
     return target_genome;
 }
-
-// auto validateJourneyIfPatientIsInserted(const Journey& journey, const int patient_id, const uint insertionPoint, const ProblemInstance &problemInstance) -> bool
-// {
-//     if(journey.empty()){
-//         return true;
-//     }
-//     // insert patient index at insertion point
-//     Journey journeyCopy = journey;
-//     journeyCopy.insert(journeyCopy.begin() + insertionPoint, patient_id);
-//     return isJourneyValid(journeyCopy, problemInstance);
-// }
 
 fn validate_journey_if_patient_is_inserted(
     journey: &Journey,
