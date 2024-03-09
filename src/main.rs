@@ -34,8 +34,14 @@ fn main() {
     // Load the specified problem instance
     let problem_instance = initialize_problem_instance(&config.problem_instance);
 
-    let best = run_genetic_algorithm_instance(&problem_instance, &mut config);
+    let output  = run_genetic_algorithm_instance(&problem_instance, &mut config);
+
+    
 
     let ouput_file = config.output_file.clone().unwrap_or("./python/solution.json".parse().unwrap());
-    best.export_to_file(ouput_file.as_str());
+    // Write output to file 
+    let json_string = serde_json::to_string(&output).unwrap();
+    std::fs::write(ouput_file, json_string).expect("Unable to write to file");
+    
+    
 }

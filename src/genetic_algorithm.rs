@@ -12,6 +12,7 @@ use crate::{
 
 use std::{ io };
 use std::io::Write;
+use serde::Serialize;
 
 fn log_population_statistics(generation: usize, population: &Population) {
     let mut feasible_population: Population = population.clone();
@@ -125,7 +126,7 @@ fn cool_down_config(generation: usize, config: &mut Config) {
 pub fn run_genetic_algorithm_instance(
     problem_instance: &ProblemInstance,
     original_config: &mut Config
-) -> Individual {
+) -> (Individual, Statistics){
     let mut population: Population = initialize_population(problem_instance, original_config);
     let mut best_individual: Individual = population[0].clone();
     let mut config = original_config.clone();
@@ -174,5 +175,86 @@ pub fn run_genetic_algorithm_instance(
     }
     println!("Best Individual: {:?}", best_individual);
 
-    best_individual
+    let mut feasible_population: Population = population.clone();
+    // filter sorted_population to only include individuals with a feasible solution
+    feasible_population.retain(|individual| individual.is_feasible());
+    if feasible_population.is_empty() {
+        warn!("No feasible solutions in the population. No Statistics to log.");
+        println!("No feasible solutions in the population. No Statistics to log.");
+    }
+
+    // Travel time Statistics
+    // sort population by fitness
+
+
+    let mut statistics: Statistics = Statistics {
+        travel_time_min_feasible: 0.0,
+        travel_time_avg_feasible: 0.0,
+        travel_time_max_feasible: 0.0,
+        travel_time_min_all: 0.0,
+        travel_time_avg_all: 0.0,
+        travel_time_max_all: 0.0,
+        fitness_min_feasible: 0.0,
+        fitness_avg_feasible: 0.0,
+        fitness_max_feasible: 0.0,
+        fitness_min_all: 0.0,
+        fitness_avg_all: 0.0,
+        fitness_max_all: 0.0,
+    };
+
+    let mut sorted_population = population.clone();
+    sorted_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
+    feasible_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
+    if  !feasible_population.is_empty() {
+        statistics.fitness_min_feasible = feasible_population[0].fitness;
+        statistics.fitness_avg_feasible = get_average_fitness(&feasible_population);
+        statistics.fitness_max_feasible = feasible_population[feasible_population.len() - 1].fitness;
+        statistics.fitness_min_all = sorted_population[0].fitness;
+        statistics.fitness_avg_all = get_average_fitness(&sorted_population);
+        statistics.fitness_max_all = sorted_population[sorted_population.len() - 1].fitness;
+    } else {
+        statistics.fitness_min_all = sorted_population[0].fitness;
+        statistics.fitness_avg_all = get_average_fitness(&sorted_population);
+        statistics.fitness_max_all = sorted_population[sorted_population.len() - 1].fitness;
+    }
+
+    // sort population by fitness
+    sorted_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
+    feasible_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
+    
+    if !feasible_population.is_empty() {
+        statistics.travel_time_min_feasible = feasible_population[0].travel_time;
+        statistics.travel_time_avg_feasible = get_average_travel_time(&feasible_population);
+        statistics.travel_time_max_feasible = feasible_population[feasible_population.len() - 1].travel_time;
+        statistics.travel_time_min_all = sorted_population[0].travel_time;
+        statistics.travel_time_avg_all = get_average_travel_time(&sorted_population);
+        statistics.travel_time_max_all = sorted_population[sorted_population.len() - 1].travel_time;
+
+    } else {
+        statistics.travel_time_min_all = sorted_population[0].travel_time;
+        statistics.travel_time_avg_all = get_average_travel_time(&sorted_population);
+        statistics.travel_time_max_all = sorted_population[sorted_population.len() - 1].travel_time;
+    }
+
+
+
+
+
+    (best_individual, statistics)
+}
+
+#[derive(Debug, Serialize)]
+pub struct Statistics {
+    pub travel_time_min_feasible: f64,
+    pub travel_time_avg_feasible: f64,
+    pub travel_time_max_feasible: f64,
+    pub travel_time_min_all: f64,
+    pub travel_time_avg_all: f64,
+    pub travel_time_max_all: f64,
+    pub fitness_min_feasible: f64,
+    pub fitness_avg_feasible: f64,
+    pub fitness_max_feasible: f64,
+    pub fitness_min_all: f64,
+    pub fitness_avg_all: f64,
+    pub fitness_max_all: f64,
 }
