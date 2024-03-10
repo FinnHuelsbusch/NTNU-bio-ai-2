@@ -1,6 +1,7 @@
 
 import multiprocessing
 from multiprocessing.pool import ThreadPool
+import os
 import random
 import signal
 import sys
@@ -16,7 +17,7 @@ import concurrent.futures
 train_instance = [i for i in range(10)]
 init_heuristic = ["appendHeuristic", "random"]
 population_size = [100, 500, 1000, 5000]
-number_of_generations = [100, 200 ,500, 1000]
+number_of_generations = [100, 200, 500, 1000]
 parent_selection = ["tournament", "rouletteWheel"]
 tournament_size_parent_selection = [2, 5, 10, 20, 50]
 tournament_probability_parent_selection = [0.0, 0.05, 0.1, 0.2, 0.5]
