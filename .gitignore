@@ -5,3 +5,11 @@
 /python/solution.json
 /python/statistics_rust.txt
 /python/gantt.csv
+configs/config_[0-9]*.json
+logs/
+outputs/
+hyperparameter_tuning.json
+hyperparameter_tuning.log
+*/__pycache__/
+*/.ipynb_checkpoints/
+*/.pytest
