@@ -243,7 +243,7 @@ pub fn run_genetic_algorithm_instance(
     (best_individual, statistics)
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct Statistics {
     pub travel_time_min_feasible: f64,
     pub travel_time_avg_feasible: f64,

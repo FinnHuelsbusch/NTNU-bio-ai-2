@@ -1,4 +1,5 @@
 use serde::{ Deserialize, Serialize };
+use serde_json::Error;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct FunctionConfig {
@@ -40,8 +41,26 @@ pub struct Config {
     pub output_file: Option<String>
 }
 
-pub fn initialize_config(file_path: &str) -> Config {
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MetaConfig {
+    pub configs: Vec<Config>,
+    pub output_file: Option<String>
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum ConfigType {
+    MetaConfig(MetaConfig),
+    Config( Config)
+}
+
+pub fn initialize_config(file_path: &str) -> ConfigType {
     let data = std::fs::read_to_string(file_path).expect("Unable to read file");
-    let config: Config = serde_json::from_str(&data).expect("JSON was not well-formatted");
-    config
+    let new_instance: Result<Config, Error> = serde_json::from_str(&data);
+    match new_instance {
+        Ok(config) => ConfigType::Config(config),
+        Err(_) => {
+            let new_instance: MetaConfig = serde_json::from_str(&data).expect("Config json was not well formatted! Did the format change?");
+            ConfigType::MetaConfig(new_instance)
+        }
+    }
 }
