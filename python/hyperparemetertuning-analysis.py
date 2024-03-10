@@ -47,12 +47,27 @@ else:
     
     # sort the data by the travel_time_avg_feasible_rel_dev_avg
     data = sorted(data, key=lambda x: x["Statistics"]["travel_time_avg_feasible_rel_dev_avg"])
+    # read number to export into meta_config.json from user input
+    try: 
+        number_to_export = int(input("How many configurations do you want to export into meta_config.json? "))
+        problem_instance = input("Which problem instance do you want to export? 0-9 ")
+    except ValueError:
+        print("Please enter a valid number.")
+    else: 
+        # write the top number_to_export configurations into meta_config.json
+        with open('./configs/meta_config.json', 'w') as f:
+            f.write('{"output_file": "outputs/meta_config.json",\n')
+            f.write('"configs": [\n')
+            for i in range(number_to_export):
+                if i == number_to_export - 1:
+                    f.write(data[i]["Config"].get_config_str(problem_instance) + "\n")
+                else:
+                    f.write(data[i]["Config"].get_config_str(problem_instance) + ",\n")
+            f.write("]}\n")
     # print the top 5 best configurations
-    for i in range(5):
-        print(f"Configuration {i+1}:")
-        print(data[i]["Config"])
+    for i in range(number_to_export):
         # print avg relative deviation
-        print("Aggregated Statistics:")
+        print(f"Aggregated Statistics of the Config {i+1}:")
         print(f"travel_time_min_feasible_rel_dev_avg: {data[i]['Statistics']['travel_time_min_feasible_rel_dev_avg']}")
         print(f"travel_time_avg_feasible_rel_dev_avg: {data[i]['Statistics']['travel_time_avg_feasible_rel_dev_avg']}")
         print(f"travel_time_max_feasible_rel_dev_avg: {data[i]['Statistics']['travel_time_max_feasible_rel_dev_avg']}")

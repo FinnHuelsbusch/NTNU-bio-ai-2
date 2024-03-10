@@ -1,0 +1,963 @@
+{"output_file": "outputs/meta_config.json",
+"configs": [
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config22503.log",
+        "output_file": "./outputs/config22503.json",
+        "population_initialisation": "appendHeuristic",
+        "population_size": 1000,
+        "number_of_generations": 500,
+        "parent_selection": {
+            "name": "rouletteWheel",
+            "tournament_size": 50,
+            "tournament_probability": 0.05,
+            "elitism_percentage": 0.0
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.1
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.1
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.05
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.1
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.01
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.5,
+            "percentage_to_slice": 0.5
+            }
+        ],
+        "survivor_selection": {
+            "name": "fullReplacement",
+            "elitism_percentage": 0.2,
+            "combine_parents_and_offspring": false,
+            "tournament_size": 20,
+            "tournament_probability": 0.05
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config8.log",
+        "output_file": "./outputs/config8.json",
+        "population_initialisation": "appendHeuristic",
+        "population_size": 500,
+        "number_of_generations": 1000,
+        "parent_selection": {
+            "name": "rouletteWheel",
+            "tournament_size": 2,
+            "tournament_probability": 0.05,
+            "elitism_percentage": 0.0
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.1
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.1
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.05
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.01
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.01
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.0
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.5,
+            "percentage_to_slice": 0.4
+            }
+        ],
+        "survivor_selection": {
+            "name": "fullReplacement",
+            "elitism_percentage": 0.1,
+            "combine_parents_and_offspring": false,
+            "tournament_size": 50,
+            "tournament_probability": 0.2
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config31.log",
+        "output_file": "./outputs/config31.json",
+        "population_initialisation": "random",
+        "population_size": 500,
+        "number_of_generations": 500,
+        "parent_selection": {
+            "name": "tournament",
+            "tournament_size": 5,
+            "tournament_probability": 0.2,
+            "elitism_percentage": 0.2
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.1
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.2
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.05
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.0
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.05
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.01
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.5,
+            "percentage_to_slice": 0.5
+            }
+        ],
+        "survivor_selection": {
+            "name": "fullReplacement",
+            "elitism_percentage": 0.2,
+            "combine_parents_and_offspring": false,
+            "tournament_size": 20,
+            "tournament_probability": 0.5
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config30014.log",
+        "output_file": "./outputs/config30014.json",
+        "population_initialisation": "random",
+        "population_size": 1000,
+        "number_of_generations": 500,
+        "parent_selection": {
+            "name": "rouletteWheel",
+            "tournament_size": 10,
+            "tournament_probability": 0.1,
+            "elitism_percentage": 0.2
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.0
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.1
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.0
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.01
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.0
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.01
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.5,
+            "percentage_to_slice": 0.3
+            }
+        ],
+        "survivor_selection": {
+            "name": "rouletteWheel",
+            "elitism_percentage": 0.05,
+            "combine_parents_and_offspring": false,
+            "tournament_size": 5,
+            "tournament_probability": 0.05
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config35005.log",
+        "output_file": "./outputs/config35005.json",
+        "population_initialisation": "random",
+        "population_size": 1000,
+        "number_of_generations": 200,
+        "parent_selection": {
+            "name": "tournament",
+            "tournament_size": 20,
+            "tournament_probability": 0.05,
+            "elitism_percentage": 0.5
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.5
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.01
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.05
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.2
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.5
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.05
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.01
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.5,
+            "percentage_to_slice": 0.4
+            }
+        ],
+        "survivor_selection": {
+            "name": "fullReplacement",
+            "elitism_percentage": 0.5,
+            "combine_parents_and_offspring": true,
+            "tournament_size": 5,
+            "tournament_probability": 0.5
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config2504.log",
+        "output_file": "./outputs/config2504.json",
+        "population_initialisation": "random",
+        "population_size": 5000,
+        "number_of_generations": 1000,
+        "parent_selection": {
+            "name": "tournament",
+            "tournament_size": 20,
+            "tournament_probability": 0.0,
+            "elitism_percentage": 0.1
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.01
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.05
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.05
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.05
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.0
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.5
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.05,
+            "percentage_to_slice": 0.3
+            }
+        ],
+        "survivor_selection": {
+            "name": "fullReplacement",
+            "elitism_percentage": 0.05,
+            "combine_parents_and_offspring": true,
+            "tournament_size": 2,
+            "tournament_probability": 0.2
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config12510.log",
+        "output_file": "./outputs/config12510.json",
+        "population_initialisation": "random",
+        "population_size": 100,
+        "number_of_generations": 500,
+        "parent_selection": {
+            "name": "rouletteWheel",
+            "tournament_size": 20,
+            "tournament_probability": 0.5,
+            "elitism_percentage": 0.5
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.01
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.01
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.05
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.1
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.2
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.0
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.01
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.5,
+            "percentage_to_slice": 0.5
+            }
+        ],
+        "survivor_selection": {
+            "name": "rouletteWheel",
+            "elitism_percentage": 0.0,
+            "combine_parents_and_offspring": false,
+            "tournament_size": 20,
+            "tournament_probability": 0.2
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config5.log",
+        "output_file": "./outputs/config5.json",
+        "population_initialisation": "random",
+        "population_size": 100,
+        "number_of_generations": 200,
+        "parent_selection": {
+            "name": "tournament",
+            "tournament_size": 20,
+            "tournament_probability": 0.05,
+            "elitism_percentage": 0.05
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.2
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.0
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.0
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.05
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.1
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.5,
+            "percentage_to_slice": 0.5
+            }
+        ],
+        "survivor_selection": {
+            "name": "rouletteWheel",
+            "elitism_percentage": 0.05,
+            "combine_parents_and_offspring": true,
+            "tournament_size": 2,
+            "tournament_probability": 0.2
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config30008.log",
+        "output_file": "./outputs/config30008.json",
+        "population_initialisation": "random",
+        "population_size": 100,
+        "number_of_generations": 500,
+        "parent_selection": {
+            "name": "rouletteWheel",
+            "tournament_size": 5,
+            "tournament_probability": 0.2,
+            "elitism_percentage": 0.1
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.01
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.1
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.1
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.5
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.01
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.05
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.5,
+            "percentage_to_slice": 0.5
+            }
+        ],
+        "survivor_selection": {
+            "name": "rouletteWheel",
+            "elitism_percentage": 0.05,
+            "combine_parents_and_offspring": true,
+            "tournament_size": 5,
+            "tournament_probability": 0.05
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config17520.log",
+        "output_file": "./outputs/config17520.json",
+        "population_initialisation": "random",
+        "population_size": 5000,
+        "number_of_generations": 100,
+        "parent_selection": {
+            "name": "tournament",
+            "tournament_size": 20,
+            "tournament_probability": 0.05,
+            "elitism_percentage": 0.5
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.2
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.0
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.01
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.01
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.1
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.01
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.01
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.05,
+            "percentage_to_slice": 0.5
+            }
+        ],
+        "survivor_selection": {
+            "name": "tournament",
+            "elitism_percentage": 0.05,
+            "combine_parents_and_offspring": false,
+            "tournament_size": 50,
+            "tournament_probability": 0.2
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config10002.log",
+        "output_file": "./outputs/config10002.json",
+        "population_initialisation": "random",
+        "population_size": 1000,
+        "number_of_generations": 1000,
+        "parent_selection": {
+            "name": "tournament",
+            "tournament_size": 50,
+            "tournament_probability": 0.2,
+            "elitism_percentage": 0.1
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.0
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.2
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.01
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.05
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.0
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.0
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.2,
+            "percentage_to_slice": 0.5
+            }
+        ],
+        "survivor_selection": {
+            "name": "rouletteWheel",
+            "elitism_percentage": 0.1,
+            "combine_parents_and_offspring": false,
+            "tournament_size": 5,
+            "tournament_probability": 0.05
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config20009.log",
+        "output_file": "./outputs/config20009.json",
+        "population_initialisation": "random",
+        "population_size": 500,
+        "number_of_generations": 1000,
+        "parent_selection": {
+            "name": "tournament",
+            "tournament_size": 10,
+            "tournament_probability": 0.2,
+            "elitism_percentage": 0.5
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.0
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.01
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.2
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.0
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.01
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.05
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.05,
+            "percentage_to_slice": 0.4
+            }
+        ],
+        "survivor_selection": {
+            "name": "fullReplacement",
+            "elitism_percentage": 0.2,
+            "combine_parents_and_offspring": true,
+            "tournament_size": 5,
+            "tournament_probability": 0.05
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config20002.log",
+        "output_file": "./outputs/config20002.json",
+        "population_initialisation": "random",
+        "population_size": 1000,
+        "number_of_generations": 1000,
+        "parent_selection": {
+            "name": "tournament",
+            "tournament_size": 10,
+            "tournament_probability": 0.2,
+            "elitism_percentage": 0.5
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.2
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.0
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.2
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.2
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.5
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.5
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.5,
+            "percentage_to_slice": 0.3
+            }
+        ],
+        "survivor_selection": {
+            "name": "fullReplacement",
+            "elitism_percentage": 0.0,
+            "combine_parents_and_offspring": true,
+            "tournament_size": 2,
+            "tournament_probability": 0.2
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config2503.log",
+        "output_file": "./outputs/config2503.json",
+        "population_initialisation": "random",
+        "population_size": 5000,
+        "number_of_generations": 200,
+        "parent_selection": {
+            "name": "tournament",
+            "tournament_size": 50,
+            "tournament_probability": 0.2,
+            "elitism_percentage": 0.1
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.5
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.2
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.05
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.05
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.01
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.05
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.05
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.2,
+            "percentage_to_slice": 0.5
+            }
+        ],
+        "survivor_selection": {
+            "name": "tournament",
+            "elitism_percentage": 0.2,
+            "combine_parents_and_offspring": true,
+            "tournament_size": 2,
+            "tournament_probability": 0.2
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config15.log",
+        "output_file": "./outputs/config15.json",
+        "population_initialisation": "appendHeuristic",
+        "population_size": 100,
+        "number_of_generations": 200,
+        "parent_selection": {
+            "name": "rouletteWheel",
+            "tournament_size": 2,
+            "tournament_probability": 0.2,
+            "elitism_percentage": 0.0
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.0
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.1
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.01
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.1
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.1
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.1
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.01
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.5,
+            "percentage_to_slice": 0.5
+            }
+        ],
+        "survivor_selection": {
+            "name": "tournament",
+            "elitism_percentage": 0.2,
+            "combine_parents_and_offspring": false,
+            "tournament_size": 10,
+            "tournament_probability": 0.5
+        }
+        }
+        ,
+
+        {
+        "problem_instance": "./train/train_9.json",
+        "log_file": "./logs/config24.log",
+        "output_file": "./outputs/config24.json",
+        "population_initialisation": "random",
+        "population_size": 100,
+        "number_of_generations": 1000,
+        "parent_selection": {
+            "name": "rouletteWheel",
+            "tournament_size": 2,
+            "tournament_probability": 0.5,
+            "elitism_percentage": 0.5
+        },
+        "crossovers": [
+            {
+            "name": "partiallyMappedCrossover",
+            "probability": 0.01
+            },
+            {
+            "name": "orderOneCrossover",
+            "probability": 0.05
+            },
+            {
+            "name": "edgeRecombination",
+            "probability": 0.01
+            }
+        ],
+        "mutations": [
+            {
+            "name": "reassignOnePatient",
+            "probability": 0.2
+            },
+            {
+            "name": "moveWithinJourney",
+            "probability": 0.01
+            },
+            {
+            "name": "swapBetweenJourneys",
+            "probability": 0.0
+            },
+            {
+            "name": "swapWithinJourney",
+            "probability": 0.01
+            },
+            {
+            "name": "insertionHeuristic",
+            "probability": 0.2,
+            "percentage_to_slice": 0.5
+            }
+        ],
+        "survivor_selection": {
+            "name": "fullReplacement",
+            "elitism_percentage": 0.2,
+            "combine_parents_and_offspring": false,
+            "tournament_size": 50,
+            "tournament_probability": 0.2
+        }
+        }
+        
+]}

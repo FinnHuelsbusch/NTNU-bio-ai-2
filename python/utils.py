@@ -175,7 +175,7 @@ class Config:
             percentage_to_slice = self.percentage_to_slice, 
             survivor_selection = self.survivor_selection, 
             elite_percentage_survivor_selection = self.elite_percentage_survivor_selection,
-            combine_parents_and_offspring = self.combine_parents_and_offspring,
+            combine_parents_and_offspring = "true" if self.combine_parents_and_offspring else "false",
             tournament_size_survivor_selection = self.tournament_size_survivor_selection,
             tournament_probability_survivor_selection = self.tournament_probability_survivor_selection
             
