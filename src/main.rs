@@ -1,5 +1,6 @@
 use genetic_algorithm::run_genetic_algorithm_instance;
 use log::{ self, LevelFilter };
+use std::io::{Write};
 
 use crate::{ config::initialize_config, problem_instance::initialize_problem_instance };
 
@@ -27,7 +28,7 @@ fn main() {
         config_path = &args[1];
     }
     // Load config
-    let mut config_type = initialize_config(config_path);
+    let config_type = initialize_config(config_path);
     let output: (Individual, Statistics);
     let output_file: String;
     
@@ -46,25 +47,37 @@ fn main() {
 
             
         },
-        config::ConfigType::MetaConfig (mut meta_config) => {
+        config::ConfigType::MetaConfig (meta_config) => {
             // sum up the number of instances 
             let number_of_threads: usize = meta_config.configs.len();
             let mut handles: Vec<thread::JoinHandle<(Individual, Statistics)>> = Vec::with_capacity(number_of_threads);
             output_file = meta_config.output_file.clone().unwrap_or("./python/solution.json".parse().unwrap());
-            for mut configInstance in meta_config.configs {
+            for mut config_instance in meta_config.configs {
                 let handle = thread::spawn(move || {
-                    let output  = run_genetic_algorithm_instance(&initialize_problem_instance(&configInstance.problem_instance), &mut configInstance);
+                    // Mute the stdout within the thread
+                    let output  = run_genetic_algorithm_instance(&initialize_problem_instance(&config_instance.problem_instance), &mut config_instance);
                     (output.0, output.1)
                 });
                 handles.push(handle);
             }
             
             let mut results: Vec<(Individual, Statistics)> = Vec::with_capacity(number_of_threads);
+            println!("Waiting for threads to finish");
             for handle in handles {
                 results.push(handle.join().unwrap());
             }
+            println!("Threads finished");
             // sort the results by fitness
-            results.sort_unstable_by(|a, b| b.0.fitness.partial_cmp(&a.0.fitness).unwrap());
+            let mut sorted_results: Vec<(Individual, Statistics)> = Vec::with_capacity(number_of_threads);
+            for result in results.iter() {
+                sorted_results.push(result.clone());
+            }
+            sorted_results.sort_unstable_by(|a, b| a.0.fitness.partial_cmp(&b.0.fitness).unwrap());
+            for result in sorted_results.iter() {
+                let config_index = results.iter().position(|x| x.0.fitness == result.0.fitness).unwrap();
+                println!("Config: {:?} Fitness: {:?}", config_index, result.0.fitness);
+            }
+            
             output = results[0].clone();
         }
     }
