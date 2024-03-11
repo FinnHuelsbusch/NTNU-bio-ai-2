@@ -1,5 +1,8 @@
 import json 
 from utils import Config
+import seaborn as sns
+import pandas as pd
+from matplotlib import pyplot as plt
 
 benchmarks = { "0":  828, 
                 "1":  828, 
@@ -45,33 +48,59 @@ else:
         config["Statistics"]["travel_time_avg_all_rel_dev_avg"] = sum([value["travel_time_avg_all_rel_dev"] for value in values]) / statistics_list_len
         config["Statistics"]["travel_time_max_all_rel_dev_avg"] = sum([value["travel_time_max_all_rel_dev"] for value in values]) / statistics_list_len
     
-    # sort the data by the travel_time_avg_feasible_rel_dev_avg
-    data = sorted(data, key=lambda x: x["Statistics"]["travel_time_avg_feasible_rel_dev_avg"])
-    # read number to export into meta_config.json from user input
-    try: 
-        number_to_export = int(input("How many configurations do you want to export into meta_config.json? "))
-        problem_instance = input("Which problem instance do you want to export? 0-9 ")
-    except ValueError:
-        print("Please enter a valid number.")
-    else: 
-        # write the top number_to_export configurations into meta_config.json
-        with open('./configs/meta_config.json', 'w') as f:
-            f.write('{"output_file": "outputs/meta_config.json",\n')
-            f.write('"configs": [\n')
-            for i in range(number_to_export):
-                if i == number_to_export - 1:
-                    f.write(data[i]["Config"].get_config_str(problem_instance) + "\n")
-                else:
-                    f.write(data[i]["Config"].get_config_str(problem_instance) + ",\n")
-            f.write("]}\n")
-    # print the top 5 best configurations
-    for i in range(number_to_export):
-        # print avg relative deviation
-        print(f"Aggregated Statistics of the Config {i+1}:")
-        print(f"travel_time_min_feasible_rel_dev_avg: {data[i]['Statistics']['travel_time_min_feasible_rel_dev_avg']}")
-        print(f"travel_time_avg_feasible_rel_dev_avg: {data[i]['Statistics']['travel_time_avg_feasible_rel_dev_avg']}")
-        print(f"travel_time_max_feasible_rel_dev_avg: {data[i]['Statistics']['travel_time_max_feasible_rel_dev_avg']}")
-        print(f"travel_time_min_all_rel_dev_avg: {data[i]['Statistics']['travel_time_min_all_rel_dev_avg']}")
-        print(f"travel_time_avg_all_rel_dev_avg: {data[i]['Statistics']['travel_time_avg_all_rel_dev_avg']}")
-        print(f"travel_time_max_all_rel_dev_avg: {data[i]['Statistics']['travel_time_max_all_rel_dev_avg']}")
-        print()
+    if input("Do you want to export the top configurations into meta_config.json? (y/n)") == "y":
+        # read number to export into meta_config.json from user input
+        try: 
+            metric = input("Which metric do you want to use for sorting? avg, per_instance_best ")
+            problem_instance = input("Which problem instance do you want to export? 0-9")
+        except ValueError:
+            print("Please enter a valid number.")
+        else: 
+            if metric == "avg":
+                number_to_export = int(input("How many configurations do you want to export into meta_config.json? "))
+                # sort the data by the travel_time_avg_feasible_rel_dev_avg
+                data = sorted(data, key=lambda x: x["Statistics"]["travel_time_avg_feasible_rel_dev_avg"])
+                # write the top number_to_export configurations into meta_config.json
+                with open('./configs/meta_config.json', 'w') as f:
+                    f.write('{"output_file": "outputs/meta_config.json",\n')
+                    f.write('"configs": [\n')
+                    for i in range(number_to_export):
+                        if i == number_to_export - 1:
+                            f.write(data[i]["Config"].get_config_str(problem_instance) + "\n")
+                        else:
+                            f.write(data[i]["Config"].get_config_str(problem_instance) + ",\n")
+                    f.write("]}\n")
+            elif metric == "per_instance_best":
+                number_to_export = int(input("How many configurations do you want to export into meta_config.json per problem instance? "))
+                with open('./configs/meta_config.json', 'w') as f:
+                    f.write('{"output_file": "outputs/meta_config.json",\n')
+                    f.write('"configs": [\n')
+                    for i in range(10):
+                        data = sorted(data, key=lambda x: x["Statistics"][str(i)]["travel_time_min_feasible_rel_dev"])
+                        for j in range(number_to_export): 
+                            # sort the data by the travel_time_min_feasible_rel_dev
+                            if i == 9 and j == number_to_export - 1:
+                                f.write(data[j]["Config"].get_config_str(problem_instance) + "\n")
+                            else:
+                                f.write(data[j]["Config"].get_config_str(problem_instance) + ",\n")
+                    f.write("]}\n")
+            
+
+    
+    # create a scatterplot where the x-axis is the problem instance and the y-axis is the travel_time_avg_feasible_rel_dev with every configuration as a point
+    sns.set_theme(style="whitegrid")
+    df_dict = {
+        "problem_instance": [],
+        "travel_time_avg_feasible_rel_dev_avg": [],
+        "hue": []
+    }
+    for config in data:
+        for problem_instance in range(10):
+            df_dict["problem_instance"].append(problem_instance)
+            value = config["Statistics"][str(problem_instance)]
+            df_dict["travel_time_avg_feasible_rel_dev_avg"].append(value.get("travel_time_avg_feasible_rel_dev", 1000000))
+            df_dict["hue"].append(config["Config"].population_size)
+    df = pd.DataFrame(df_dict)
+    sns.scatterplot(data=df, x="problem_instance", y="travel_time_avg_feasible_rel_dev_avg", hue="hue", palette = "bright")
+    plt.show()
+    
