@@ -1,5 +1,5 @@
 {
-  "problem_instance": "./train/train_9.json",
+  "problem_instance": "./train/train_8.json",
   "population_initialisation": "random",
   "population_size": 6000,
   "number_of_generations": 500,
@@ -50,6 +50,10 @@
     },
     {
       "name": "cutLongestTripAndInsert", 
+      "probability": 0.2
+    },
+    {
+      "name": "twoOpt", 
       "probability": 0.2
     }
   ],

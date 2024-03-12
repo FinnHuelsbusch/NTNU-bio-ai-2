@@ -2,16 +2,16 @@ use crossbeam::thread;
 use log::{ info, warn };
 
 use crate::{
-    config::{self, Config},
+    config::Config,
     crossover_functions::crossover,
-    individual::{self, Individual},
+    individual::Individual,
     mutation_functions::mutate,
     population::{ get_average_fitness, get_average_travel_time, initialize_population, Population },
-    problem_instance::{ self, should_early_stop, ProblemInstance },
+    problem_instance::{ should_early_stop, ProblemInstance },
     selection_functions::{ parent_selection, survivor_selection },
 };
 
-use std::{ io, sync::{mpsc, Arc, Mutex}, thread::{spawn, JoinHandle} };
+use std::{ io, sync::{ Arc, Mutex } };
 use std::io::Write;
 use serde::Serialize;
 
@@ -126,10 +126,12 @@ fn cool_down_config(generation: usize, config: &mut Config) {
 
 pub fn run_genetic_algorithm_instance(
     problem_instance: &ProblemInstance,
-    original_config: &mut Config
+    original_config: &mut Config,
+    leaderboard: Arc<Mutex<LeaderBoard>>
 ) -> (Individual, Statistics) {
     let mut population: Population = initialize_population(problem_instance, original_config);
-    let mut best_individual: Individual = population[0].clone();
+    let mut best_individual_in_instance: Individual = population[0].clone();
+
     let mut config = original_config.clone();
 
     let mut delta;
@@ -155,10 +157,6 @@ pub fn run_genetic_algorithm_instance(
         population = survivor_selection(&parents, &children, &config);
 
         population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
-        if population[0].travel_time < best_individual.travel_time && population[0].is_feasible() {
-            best_individual = population[0].clone();
-            info!("New best individual. Genome: {:?}", best_individual.genome);
-        }
 
         // Annealing
         cool_down_config(generation, &mut config);
@@ -172,16 +170,48 @@ pub fn run_genetic_algorithm_instance(
             }
         }
 
+
+
+        let mut leaderboard_mut = leaderboard.lock().unwrap();
+        if leaderboard_mut.best_individuals.is_empty() {
+            leaderboard_mut.best_individuals.push(population[0].clone());
+        }
+
+        if
+            population[0].travel_time < best_individual_in_instance.travel_time &&
+            population[0].is_feasible()
+        {
+            best_individual_in_instance = population[0].clone();
+
+            if
+                best_individual_in_instance.travel_time <
+                leaderboard_mut.best_individuals
+                    [leaderboard_mut.best_individuals.len() - 1].travel_time
+            {
+                leaderboard_mut.best_individuals.push(best_individual_in_instance.clone());
+            }
+            info!("New best individual. Genome: {:?}", best_individual_in_instance.genome);
+        }
+
+        let mut stop = false;
+        if
+            should_early_stop(
+                leaderboard_mut.best_individuals
+                    [leaderboard_mut.best_individuals.len() - 1].fitness,
+                &problem_instance
+            )
+        {
+            println!("Reached benchmark! Stopping");
+            stop= true;
+        }
+
         log_population_statistics(generation, &population);
-
-        // // Early stopping
-        // if should_early_stop(best_individual.fitness, &problem_instance) {
-        //     println!("Reached benchmark! Stopping");
-        //     break;
-        // }
+        if stop {
+            break;
+        }
     }
-    println!("Best Individual: {:?}", best_individual);
 
+    println!("Best Individual: {:?}", best_individual_in_instance);
     let mut feasible_population: Population = population.clone();
     // filter sorted_population to only include individuals with a feasible solution
     feasible_population.retain(|individual| individual.is_feasible());
@@ -245,7 +275,7 @@ pub fn run_genetic_algorithm_instance(
         statistics.travel_time_max_all = sorted_population[sorted_population.len() - 1].travel_time;
     }
 
-    (best_individual, statistics)
+    (best_individual_in_instance, statistics)
 }
 
 pub fn run_genetic_algorithm(
@@ -256,27 +286,39 @@ pub fn run_genetic_algorithm(
 
     let number_of_threads = num_cpus::get() - 1;
 
+    let mut leaderboard: Arc<Mutex<LeaderBoard>> = Arc::new(
+        Mutex::new(LeaderBoard {
+            best_individuals: vec![],
+        })
+    );
+
     let result = Arc::new(Mutex::new(Vec::new()));
 
-     // Launch multiple threads in parallel
-     thread::scope(|s| {
-        for _ in 0..number_of_threads {
-            let arc_struct1 = problem_instance.clone();
-            let mut arc_struct2 = original_config.clone();
-            let result = Arc::clone(&result);
+    // Launch multiple threads in parallel
+    thread
+        ::scope(|s| {
+            for _ in 0..number_of_threads {
+                let arc_struct1 = problem_instance.clone();
+                let mut arc_struct2 = original_config.clone();
+                let result = Arc::clone(&result);
+                let leaderboard_cloned = Arc::clone(&leaderboard);
 
-            // Spawn a new thread
-            s.spawn(move |_| {
-                // Call the function with the cloned structs
-                let tuple_result = run_genetic_algorithm_instance(&arc_struct1, &mut arc_struct2);
+                // Spawn a new thread
+                s.spawn(move |_| {
+                    // Call the function with the cloned structs
+                    let tuple_result = run_genetic_algorithm_instance(
+                        &arc_struct1,
+                        &mut arc_struct2,
+                        leaderboard_cloned
+                    );
 
-                // Lock the result vector and push the tuple result
-                let mut result = result.lock().unwrap();
-                result.push(tuple_result);
-            });
-        }
-    })
-    .unwrap(); // Wait for all threads to finish
+                    // Lock the result vector and push the tuple result
+                    let mut result = result.lock().unwrap();
+                    result.push(tuple_result);
+                });
+            }
+        })
+        .unwrap(); // Wait for all threads to finish
 
     let final_result = result.lock().unwrap().clone();
 
@@ -286,13 +328,19 @@ pub fn run_genetic_algorithm(
     }
     sorted_results.sort_unstable_by(|a, b| b.0.fitness.partial_cmp(&a.0.fitness).unwrap());
     for result in sorted_results.iter() {
-        let config_index = final_result.iter().position(|x| x.0.fitness == result.0.fitness).unwrap();
+        let config_index = final_result
+            .iter()
+            .position(|x| x.0.fitness == result.0.fitness)
+            .unwrap();
         println!("Config: {:?} Fitness: {:?}", config_index, result.0.fitness);
     }
 
-
-
     sorted_results[0].clone()
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct LeaderBoard {
+    pub best_individuals: Vec<Individual>,
 }
 
 #[derive(Debug, Serialize, Clone)]
