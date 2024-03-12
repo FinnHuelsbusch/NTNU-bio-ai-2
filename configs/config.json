@@ -1,68 +1,63 @@
 {
   "problem_instance": "./train/train_9.json",
   "population_initialisation": "random",
-  "population_size": 1000,
-  "number_of_generations": 200,
+  "population_size": 6000,
+  "number_of_generations": 500,
   "parent_selection": {
-    "name": "tournament",
-    "tournament_size": 10,
-    "tournament_probability": 0.5,
-    "elitism_percentage": 0.02
+    "name": "rouletteWheel",
+    "tournament_size": 20,
+    "tournament_probability": 0.1,
+    "elitism_percentage": 0.0
   },
   "crossovers": [
     {
       "name": "partiallyMappedCrossover",
-      "probability": 0.2,
-      "annealing_delta": -0.001
+      "probability": 0.01
     },
     {
       "name": "orderOneCrossover",
-      "probability": 0.2,
-      "annealing_delta": -0.001
+      "probability": 0.1
     },
     {
       "name": "edgeRecombination",
-      "probability": 0.01,
-      "annealing_delta": 0.001
+      "probability": 0.1
     }
   ],
   "mutations": [
     {
       "name": "reassignOnePatient",
-      "probability": 0.1,
-      "annealing_delta": -0.0002
+      "probability": 0.3
     },
     {
       "name": "moveWithinJourney",
-      "probability": 0.2,
-      "annealing_delta": -0.0001
+      "probability": 0.2
+     
     },
     {
       "name": "swapBetweenJourneys",
-      "probability": 0.2,
-      "annealing_delta": -0.0001
+      "probability": 0.3
+     
     },
     {
       "name": "swapWithinJourney",
-      "probability": 0.2,
-      "annealing_delta": -0.0001
+      "probability": 0.2
+     
     },
     {
       "name": "insertionHeuristic",
-      "probability": 0.3,
-      "annealing_delta": 0.0001,
-      "percentage_to_slice": 0.33
-    }, 
+      "probability": 0.5,
+      "percentage_to_slice": 0.5
+    },
     {
       "name": "cutLongestTripAndInsert", 
-      "probability": 0.1
+      "probability": 0.2
     }
   ],
   "survivor_selection": {
     "name": "tournament",
-    "elitism_percentage": 0.02,
+    "elitism_percentage": 0.01,
     "combine_parents_and_offspring": true,
-    "tournament_size": 10,
-    "tournament_probability": 0.5
+    "tournament_size": 5,
+    "tournament_probability": 0.6
   }
 }

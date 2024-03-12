@@ -1,11 +1,13 @@
 use genetic_algorithm::run_genetic_algorithm_instance;
 use log::{ self, LevelFilter };
+use core::num;
 use std::io::{Write};
 
+use crate::config::MetaConfig;
 use crate::{ config::initialize_config, problem_instance::initialize_problem_instance };
 
 use std::{env, thread};
-use crate::genetic_algorithm::Statistics;
+use crate::genetic_algorithm::{run_genetic_algorithm, Statistics};
 use crate::individual::Individual;
 
 mod config;
@@ -40,8 +42,11 @@ fn main() {
 
             // Load the specified problem instance
             let problem_instance = initialize_problem_instance(&config.problem_instance);
+      
+    
 
-            output = run_genetic_algorithm_instance(&problem_instance, &mut config);
+
+            output = run_genetic_algorithm(&problem_instance, &mut config);
             output_file = config.output_file.clone().unwrap_or("./python/solution.json".parse().unwrap());
 
 

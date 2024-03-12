@@ -167,9 +167,9 @@ pub fn calculate_fitness(individual: &mut Individual, problem_instance: &Problem
     }
     let fitness =
         -combined_trip_time -
-        capacity_penalty * 100000.0 -
-        missing_care_time_penalty * 10000.0 -
-        to_late_to_depot_penality * 10000.0;
+        capacity_penalty * 4.0 -
+        missing_care_time_penalty * 7.0 -
+        to_late_to_depot_penality * 4.0;
 
     individual.travel_time = combined_travel_time;
     individual.fitness = fitness;

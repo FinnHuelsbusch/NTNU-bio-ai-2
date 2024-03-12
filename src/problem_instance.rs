@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use crate::{depot::Depot, patient::Patient};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct ProblemInstance {
     pub instance_name: String,
 
@@ -51,6 +51,12 @@ where
     }
 
     deserializer.deserialize_map(PatientsVisitor)
+}
+
+pub fn should_early_stop(best_fitness: f64, problem_instance: &ProblemInstance) -> bool {
+    let five_percent_benchmark = -(problem_instance.benchmark * 1.05).ceil();
+    println!("Five percent  {:?} {:?}",  problem_instance.benchmark,  five_percent_benchmark);
+    best_fitness >= five_percent_benchmark
 }
 
 pub fn initialize_problem_instance(file_path: &str) -> ProblemInstance {

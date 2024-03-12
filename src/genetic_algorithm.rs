@@ -1,16 +1,17 @@
+use crossbeam::thread;
 use log::{ info, warn };
 
 use crate::{
-    config::{ Config },
+    config::{self, Config},
     crossover_functions::crossover,
-    individual::{ Individual },
+    individual::{self, Individual},
     mutation_functions::mutate,
     population::{ get_average_fitness, get_average_travel_time, initialize_population, Population },
-    problem_instance::ProblemInstance,
+    problem_instance::{ self, should_early_stop, ProblemInstance },
     selection_functions::{ parent_selection, survivor_selection },
 };
 
-use std::{ io };
+use std::{ io, sync::{mpsc, Arc, Mutex}, thread::{spawn, JoinHandle} };
 use std::io::Write;
 use serde::Serialize;
 
@@ -126,7 +127,7 @@ fn cool_down_config(generation: usize, config: &mut Config) {
 pub fn run_genetic_algorithm_instance(
     problem_instance: &ProblemInstance,
     original_config: &mut Config
-) -> (Individual, Statistics){
+) -> (Individual, Statistics) {
     let mut population: Population = initialize_population(problem_instance, original_config);
     let mut best_individual: Individual = population[0].clone();
     let mut config = original_config.clone();
@@ -159,8 +160,8 @@ pub fn run_genetic_algorithm_instance(
             info!("New best individual. Genome: {:?}", best_individual.genome);
         }
 
+        // Annealing
         cool_down_config(generation, &mut config);
-
         if generation % 10 == 0 {
             let avg = get_average_travel_time(&population);
             delta = (last - avg).abs();
@@ -172,6 +173,12 @@ pub fn run_genetic_algorithm_instance(
         }
 
         log_population_statistics(generation, &population);
+
+        // // Early stopping
+        // if should_early_stop(best_individual.fitness, &problem_instance) {
+        //     println!("Reached benchmark! Stopping");
+        //     break;
+        // }
     }
     println!("Best Individual: {:?}", best_individual);
 
@@ -185,7 +192,6 @@ pub fn run_genetic_algorithm_instance(
 
     // Travel time Statistics
     // sort population by fitness
-
 
     let mut statistics: Statistics = Statistics {
         travel_time_min_feasible: 0.0,
@@ -205,10 +211,12 @@ pub fn run_genetic_algorithm_instance(
     let mut sorted_population = population.clone();
     sorted_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
     feasible_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
-    if  !feasible_population.is_empty() {
+    if !feasible_population.is_empty() {
         statistics.fitness_min_feasible = feasible_population[0].fitness;
         statistics.fitness_avg_feasible = get_average_fitness(&feasible_population);
-        statistics.fitness_max_feasible = feasible_population[feasible_population.len() - 1].fitness;
+        statistics.fitness_max_feasible = feasible_population[
+            feasible_population.len() - 1
+        ].fitness;
         statistics.fitness_min_all = sorted_population[0].fitness;
         statistics.fitness_avg_all = get_average_fitness(&sorted_population);
         statistics.fitness_max_all = sorted_population[sorted_population.len() - 1].fitness;
@@ -221,26 +229,70 @@ pub fn run_genetic_algorithm_instance(
     // sort population by fitness
     sorted_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
     feasible_population.sort_unstable_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
-    
+
     if !feasible_population.is_empty() {
         statistics.travel_time_min_feasible = feasible_population[0].travel_time;
         statistics.travel_time_avg_feasible = get_average_travel_time(&feasible_population);
-        statistics.travel_time_max_feasible = feasible_population[feasible_population.len() - 1].travel_time;
+        statistics.travel_time_max_feasible = feasible_population[
+            feasible_population.len() - 1
+        ].travel_time;
         statistics.travel_time_min_all = sorted_population[0].travel_time;
         statistics.travel_time_avg_all = get_average_travel_time(&sorted_population);
         statistics.travel_time_max_all = sorted_population[sorted_population.len() - 1].travel_time;
-
     } else {
         statistics.travel_time_min_all = sorted_population[0].travel_time;
         statistics.travel_time_avg_all = get_average_travel_time(&sorted_population);
         statistics.travel_time_max_all = sorted_population[sorted_population.len() - 1].travel_time;
     }
 
-
-
-
-
     (best_individual, statistics)
+}
+
+pub fn run_genetic_algorithm(
+    problem_instance: &ProblemInstance,
+    original_config: &mut Config
+) -> (Individual, Statistics) {
+    // Define some data and a reference to it
+
+    let number_of_threads = num_cpus::get() - 1;
+
+    let result = Arc::new(Mutex::new(Vec::new()));
+
+     // Launch multiple threads in parallel
+     thread::scope(|s| {
+        for _ in 0..number_of_threads {
+            let arc_struct1 = problem_instance.clone();
+            let mut arc_struct2 = original_config.clone();
+            let result = Arc::clone(&result);
+
+            // Spawn a new thread
+            s.spawn(move |_| {
+                // Call the function with the cloned structs
+                let tuple_result = run_genetic_algorithm_instance(&arc_struct1, &mut arc_struct2);
+
+                // Lock the result vector and push the tuple result
+                let mut result = result.lock().unwrap();
+                result.push(tuple_result);
+            });
+        }
+    })
+    .unwrap(); // Wait for all threads to finish
+
+    let final_result = result.lock().unwrap().clone();
+
+    let mut sorted_results: Vec<(Individual, Statistics)> = Vec::with_capacity(number_of_threads);
+    for result in final_result.iter() {
+        sorted_results.push(result.clone());
+    }
+    sorted_results.sort_unstable_by(|a, b| b.0.fitness.partial_cmp(&a.0.fitness).unwrap());
+    for result in sorted_results.iter() {
+        let config_index = final_result.iter().position(|x| x.0.fitness == result.0.fitness).unwrap();
+        println!("Config: {:?} Fitness: {:?}", config_index, result.0.fitness);
+    }
+
+
+
+    sorted_results[0].clone()
 }
 
 #[derive(Debug, Serialize, Clone)]
