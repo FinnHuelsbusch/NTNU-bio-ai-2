@@ -1,0 +1,58 @@
+{
+    "problem_instance": "./train/train_0.json",
+    "log_file": "./logs/config26814.log",
+    "output_file": "./outputs/config26814.json",
+    "population_initialisation": "appendHeuristic",
+    "population_size": 5000,
+    "number_of_generations": 1000,
+    "parent_selection": {
+      "name": "rouletteWheel",
+      "tournament_size": 20,
+      "tournament_probability": 0.1,
+      "elitism_percentage": 0.0
+    },
+    "crossovers": [
+      {
+        "name": "partiallyMappedCrossover",
+        "probability": 0.0
+      },
+      {
+        "name": "orderOneCrossover",
+        "probability": 0.05
+      },
+      {
+        "name": "edgeRecombination",
+        "probability": 0.1
+      }
+    ],
+    "mutations": [
+      {
+        "name": "reassignOnePatient",
+        "probability": 0.0
+      },
+      {
+        "name": "moveWithinJourney",
+        "probability": 0.1
+      },
+      {
+        "name": "swapBetweenJourneys",
+        "probability": 0.2
+      },
+      {
+        "name": "swapWithinJourney",
+        "probability": 0.2
+      },
+      {
+        "name": "insertionHeuristic",
+        "probability": 0.5,
+        "percentage_to_slice": 0.5
+      }
+    ],
+    "survivor_selection": {
+      "name": "fullReplacement",
+      "elitism_percentage": 0.1,
+      "combine_parents_and_offspring": false,
+      "tournament_size": 20,
+      "tournament_probability": 0.5
+    }
+  }
