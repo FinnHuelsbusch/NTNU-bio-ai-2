@@ -1,8 +1,9 @@
 {
-  "problem_instance": "./train/train_8.json",
+  "problem_instance": "./train/train_9.json",
   "population_initialisation": "random",
   "population_size": 6000,
   "number_of_generations": 500,
+  "early_stopping": true,
   "parent_selection": {
     "name": "rouletteWheel",
     "tournament_size": 20,
