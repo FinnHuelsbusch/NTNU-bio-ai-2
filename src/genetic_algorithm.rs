@@ -1,5 +1,6 @@
 use crossbeam::thread;
 use log::{ info, warn };
+use rand::Rng;
 
 use crate::{
     config::Config,
@@ -137,6 +138,8 @@ pub fn run_genetic_algorithm_instance(
     let mut delta;
     let mut last = -f64::MAX;
 
+    let mut rng = rand::thread_rng();
+
     for generation in 0..config.number_of_generations {
         println!("Calculating Generation: {:?}", generation);
 
@@ -171,7 +174,7 @@ pub fn run_genetic_algorithm_instance(
         }
 
 
-
+        // Capture best individual global
         let mut leaderboard_mut = leaderboard.lock().unwrap();
         if leaderboard_mut.best_individuals.is_empty() {
             leaderboard_mut.best_individuals.push(population[0].clone());
@@ -193,6 +196,7 @@ pub fn run_genetic_algorithm_instance(
             info!("New best individual. Genome: {:?}", best_individual_in_instance.genome);
         }
 
+        // Stop if any thread has reached the benchmark
         let mut stop = false;
         if config.early_stopping &&
             should_early_stop(
@@ -203,6 +207,14 @@ pub fn run_genetic_algorithm_instance(
         {
             println!("Reached benchmark! Stopping");
             stop= true;
+        }
+
+        // exchange best individual. Get the best individual from the global leaderboard and insert it into own
+        if generation % config.island_crossing_nth_turn == 0 && !leaderboard_mut.best_individuals.is_empty()  {
+            let best = leaderboard_mut.best_individuals[leaderboard_mut.best_individuals.len() - 1].clone();
+            let index = rng.gen_range(0..config.population_size);
+
+            population[index] = best;
         }
 
         log_population_statistics(generation, &population);

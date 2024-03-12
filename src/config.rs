@@ -34,6 +34,7 @@ pub struct Config {
     pub population_size: usize,
     pub number_of_generations: usize,
     pub early_stopping: bool,
+    pub island_crossing_nth_turn: usize,
     pub parent_selection: FunctionConfig,
     pub crossovers: Vec<FunctionConfig>,
     pub mutations: Vec<FunctionConfig>,

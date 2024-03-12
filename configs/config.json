@@ -3,6 +3,7 @@
   "population_initialisation": "random",
   "population_size": 6000,
   "number_of_generations": 500,
+  "island_crossing_nth_turn": 10,
   "early_stopping": true,
   "parent_selection": {
     "name": "rouletteWheel",
