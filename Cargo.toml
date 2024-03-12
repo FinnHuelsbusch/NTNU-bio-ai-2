@@ -14,3 +14,12 @@ log = "0.4.21"
 simple-logging = "2.0.2"
 num_cpus = "1.14.0"
 crossbeam= "0.8.4"
+tikv-jemallocator = "0.5"
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+opt-level = 3
+
+[build]
+rustflags = ["-C", "target-cpu=native"]

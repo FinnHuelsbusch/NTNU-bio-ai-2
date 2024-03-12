@@ -1,10 +1,12 @@
+#[cfg(target_os = "linux")]
+#[global_allocator]
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+
 use genetic_algorithm::run_genetic_algorithm_instance;
 use log::{ self, LevelFilter };
-use core::num;
-use std::io::{Write};
 use std::sync::{Arc, Mutex};
 
-use crate::config::MetaConfig;
+
 use crate::{ config::initialize_config, problem_instance::initialize_problem_instance };
 
 use std::{env, thread};
