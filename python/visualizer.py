@@ -1,4 +1,5 @@
 
+import os
 from typing import List
 from matplotlib.animation import FuncAnimation
 import seaborn as sns
@@ -16,7 +17,7 @@ import ast
 class Individual:
     def __init__(self, filepath):
         with open(filepath) as f:
-            self.data = json.load(f)
+            self.data = json.load(f)[0]
             self.fitness = self.data['fitness']
             self.genome = self.data['genome']
 
@@ -392,10 +393,15 @@ def visualize_thread_data(thread_id, thread_data):
 
 
 if __name__ == "__main__":
+    # read training instace from command line
+    training_instance = int(input("Enter the training instance [0-9]: "))
     # load the problem instance
-    problem_instance = ProblemInstance.load_instance("train_9.json")
+    problem_instance = ProblemInstance.load_instance(f"train_{training_instance}.json")
     # load the individual
     individual = Individual("./python/solution.json")
+    # create a directory for the metrics
+    if not os.path.exists('./metrics'):
+        os.makedirs('./metrics')
     # visualize the individual
     visualizeAsGantChart(individual, problem_instance)
     plt.savefig('./metrics/trip_gant.png')
