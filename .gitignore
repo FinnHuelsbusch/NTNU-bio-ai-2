@@ -1,7 +1,7 @@
 /target
 .idea
 
-/metrics
+/analytics
 /python/solution.json
 /python/statistics_rust.txt
 /python/gantt.csv
@@ -13,3 +13,4 @@ hyperparameter_tuning.log
 */__pycache__/
 */.ipynb_checkpoints/
 */.pytest
+

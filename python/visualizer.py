@@ -1,4 +1,5 @@
 
+from argparse import ArgumentParser
 import os
 from typing import List
 from matplotlib.animation import FuncAnimation
@@ -51,7 +52,7 @@ class ProblemInstance:
         self.travelTime = travel_time
 
     def load_instance(filename):
-        with open(f"./train/{filename}", 'r') as file:
+        with open(filename, 'r') as file:
             data = json.load(file)
 
         instance_name = data["instance_name"]
@@ -156,7 +157,7 @@ def read_log_file_genome_development(file_path):
     return logfile_data
 
 
-def visualizeAsGantChart(individual: Individual, problem_instance: ProblemInstance):
+def visualizeAsGantChart(individual: Individual, problem_instance: ProblemInstance, training_instance_name):
 
     data = {
         'Task': [],
@@ -293,7 +294,7 @@ def visualizeAsGantChart(individual: Individual, problem_instance: ProblemInstan
     # display the plot
     # save df to csv ordered by nurse and start time
     df = df.sort_values(by=['Task', 'Start Time'])
-    df.to_csv('./python/gantt.csv', index=False)
+    df.to_csv(f'./analytics/{problem_instance.instanceName}/gant_chart.csv')
 
 
 def animateTripsOnMap(genomes, problem_instance, filename='animation.gif'):
@@ -354,7 +355,7 @@ def read_log_file_individual_statistics(filepath):
     return data
 
 
-def visualize_thread_data(thread_id, thread_data):
+def visualize_thread_data(thread_id, thread_data, training_instance_name):
     df = pd.DataFrame(thread_data)
     fig, ax = plt.subplots()
     sns.lineplot(data=df, x=df.index, y="Best Travel Time", label="Best", color="green", ax=ax)
@@ -370,59 +371,77 @@ def visualize_thread_data(thread_id, thread_data):
     ax2.set_ylabel("Fitness")
     plt.title(f"Thread {thread_id} - Best, Avg, Worst Fitness")
     plt.xlabel("Generation")
-    plt.savefig('./metrics/fitness_' + thread_id + '.png')
+    plt.savefig(f'./analytics/{training_instance_name}/{thread_id}_fitness.png')
 
-
+def write_ouput_file(problem_instance, individual, training_instance_name):
+    # write output file:
+    with open(f'./analytics/{training_instance_name}/output.txt', 'w') as file:
+        file.write("Nurse capacity: " + str(problem_instance.nurseCapacity) + "\n")
+        file.write("Depot return time: " + str(problem_instance.depot.returnTime) + "\n")
+        # print line only consisting of - 
+        file.write("-" * 50 + "\n")
+        # iterate through the different trips
+        for i, trip in enumerate(individual.genome):
+            nurse_name = f'Nurse {i}'
+            route_duration = 0
+            covered_demand = 0
+            patient_sequence = ''
+            # iterate through the different patients in the trip
+            patient_sequence += f'Depot(0) -> '
+            for j in range(len(trip)):
+                if j == 0:
+                        route_duration += problem_instance.travelTime[0][trip[j]]
+                        patient_sequence += f'Patient{trip[j]}({round(route_duration, 2)}-{round(route_duration+problem_instance.patients[trip[j]].careTime)})[{problem_instance.patients[trip[j]].startTime}-{problem_instance.patients[trip[j]].endTime}] -> '
+                else:
+                        route_duration += problem_instance.travelTime[trip[j-1]][trip[j]]
+                        patient_sequence += f'Patient{trip[j]}({round(route_duration, 2)}-{round(route_duration+problem_instance.patients[trip[j]].careTime)})[{problem_instance.patients[trip[j]].startTime}-{problem_instance.patients[trip[j]].endTime}] -> '
+                covered_demand += problem_instance.patients[trip[j]].demand
+            if len(trip) > 0:
+                route_duration += problem_instance.travelTime[trip[-1]][0]
+            patient_sequence += f'Depot({route_duration})'
+            # write in one line 
+            file.write(f"{nurse_name}\t {route_duration}\t {covered_demand}\t {patient_sequence}\n")
+        # print line only consisting of -
+        file.write("-" * 50 + "\n")
+        # print the fitness
+        file.write(f"Objective value (total duration): {individual.fitness}\n")
 
 if __name__ == "__main__":
-    # read training instace from command line
-    training_instance = int(input("Enter the training instance [0-9]: "))
-    # load the problem instance
-    problem_instance = ProblemInstance.load_instance(f"train_{training_instance}.json")
-    # load the individual
-    individual = Individual("./python/solution.json")
+
+
+    parser = ArgumentParser()
+    parser.add_argument("-t", "--training-instance", dest="training_instance",
+                        help="The path to the training instance", required=True)
+    parser.add_argument("-s", "--solution-file", dest="solution_file",
+                        help="The solution file to visualize", default="./python/solution.json")
+
+    args = parser.parse_args()
     # create a directory for the metrics
-    if not os.path.exists('./metrics'):
-        os.makedirs('./metrics')
+    if not os.path.exists('./analytics'):
+        os.makedirs('./analytics')
+    training_instance_name = args.training_instance.split('/')[-1].split('.')[0]
+    # create folder for training instances
+    if not os.path.exists(f'./analytics/{training_instance_name}'):
+        os.makedirs(f'./analytics/{training_instance_name}')
+
+    # load the problem instance
+    problem_instance = ProblemInstance.load_instance(args.training_instance)
+    # load the individual
+    individual = Individual(args.solution_file)
+
     # visualize the individual
-    visualizeAsGantChart(individual, problem_instance)
-    plt.savefig('./metrics/trip_gant.png')
+    visualizeAsGantChart(individual, problem_instance, training_instance_name)
+    plt.savefig(f'./analytics/{training_instance_name}/gant_chart.png')
     visualizeTripsOnMap(individual.genome, problem_instance)
-    plt.savefig('./metrics/trip_map.png')
+    plt.savefig(f'./analytics/{training_instance_name}/trips.png')
     # read the log file
-    logfile_data_genome_development = read_log_file_genome_development(
-        './python/statistics_rust.txt')
-    logfile_data_individual_statistics = read_log_file_individual_statistics(
-        './python/statistics_rust.txt')
+    logfile_data_genome_development = read_log_file_genome_development('./python/statistics_rust.txt')
+    logfile_data_individual_statistics = read_log_file_individual_statistics('./python/statistics_rust.txt')
     # visualize the log file
     keys = list(logfile_data_genome_development.keys())
     for thread_id, thread_data in logfile_data_individual_statistics.items():
-        df = pd.DataFrame(thread_data)
-        fig, ax = plt.subplots()
-        sns.lineplot(data=df, x=df.index, y="Best Travel Time",
-                     label="Best", color="green", ax=ax)
-        sns.lineplot(data=df, x=df.index, y="Avg Travel Time",
-                     label="Avg", color="blue", ax=ax)
-        sns.lineplot(data=df, x=df.index, y="Worst Travel Time",
-                     label="Worst", color="red", ax=ax)
-        # label the axes
-        ax.set_ylabel("Travel Time")
-        # second y-axis
-        ax2 = ax.twinx()
-        sns.lineplot(data=df, x=df.index, y="Best Fitness",
-                     label="Best", color="green", ax=ax2, linestyle='--')
-        sns.lineplot(data=df, x=df.index, y="Avg Fitness",
-                     label="Avg", color="blue", ax=ax2, linestyle='--')
-        sns.lineplot(data=df, x=df.index, y="Worst Fitness",
-                     label="Worst", color="red", ax=ax2, linestyle='--')
-        ax2.set_ylabel("Fitness")
-        plt.title(f"Thread {thread_id} - Best, Avg, Worst Fitness")
-        plt.xlabel("Generation")
+        visualize_thread_data(thread_id, thread_data, training_instance_name)
 
-        plt.show()
-    # for thread_id, thread_data in logfile_data_genome_development.items():
-    #     for genome_name, generations in thread_data.items():
-    #         genomes = []
-    #         for generation, genome in generations.items():
-    #             genomes.append(genome)
-    #         animateTripsOnMap(genomes, problem_instance, f'animation_{keys.index(thread_id)}_{genome_name}.gif')
+    # write output file:
+    write_ouput_file(problem_instance, individual, training_instance_name)
+
