@@ -194,7 +194,7 @@ pub fn run_genetic_algorithm_instance(
         }
 
         let mut stop = false;
-        if
+        if config.early_stopping &&
             should_early_stop(
                 leaderboard_mut.best_individuals
                     [leaderboard_mut.best_individuals.len() - 1].fitness,
