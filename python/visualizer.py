@@ -357,39 +357,21 @@ def read_log_file_individual_statistics(filepath):
 def visualize_thread_data(thread_id, thread_data):
     df = pd.DataFrame(thread_data)
     fig, ax = plt.subplots()
-    sns.lineplot(data=df, x=df.index, y="Best Travel Time",
-                 label="Best", color="green", ax=ax)
-    sns.lineplot(data=df, x=df.index, y="Avg Travel Time",
-                 label="Avg", color="blue", ax=ax)
-    sns.lineplot(data=df, x=df.index, y="Worst Travel Time",
-                 label="Worst", color="red", ax=ax)
+    sns.lineplot(data=df, x=df.index, y="Best Travel Time", label="Best", color="green", ax=ax)
+    sns.lineplot(data=df, x=df.index, y="Avg Travel Time", label="Avg", color="blue", ax=ax)
+    sns.lineplot(data=df, x=df.index, y="Worst Travel Time", label="Worst", color="red", ax=ax)
     # label the axes
     ax.set_ylabel("Travel Time")
     # second y-axis
     ax2 = ax.twinx()
-    sns.lineplot(data=df, x=df.index, y="Best Fitness",
-                 label="Best", color="green", ax=ax2, linestyle='--')
-    sns.lineplot(data=df, x=df.index, y="Avg Fitness",
-                 label="Avg", color="blue", ax=ax2, linestyle='--')
-    sns.lineplot(data=df, x=df.index, y="Worst Fitness",
-                 label="Worst", color="red", ax=ax2, linestyle='--')
+    sns.lineplot(data=df, x=df.index, y="Best Fitness", label="Best", color="green", ax=ax2, linestyle='--')
+    sns.lineplot(data=df, x=df.index, y="Avg Fitness", label="Avg", color="blue", ax=ax2, linestyle='--')
+    sns.lineplot(data=df, x=df.index, y="Worst Fitness", label="Worst", color="red", ax=ax2, linestyle='--')
     ax2.set_ylabel("Fitness")
     plt.title(f"Thread {thread_id} - Best, Avg, Worst Fitness")
     plt.xlabel("Generation")
     plt.savefig('./metrics/fitness_' + thread_id + '.png')
 
-    # fig, ax = plt.subplots()
-    # sns.lineplot(data=df, x=df.index, y="Best Travel Time", label="Best", color="green", ax=ax)
-    # sns.lineplot(data=df, x=df.index, y="Avg Travel Time", label="Avg", color="blue", ax=ax)
-    # sns.lineplot(data=df, x=df.index, y="Worst Travel Time", label="Worst", color="red", ax=ax)
-    # ax.set_ylabel("Travel Time")
-    #     # second y-axis
-    # ax2 = ax.twinx()
-    # sns.lineplot(data=df, x=df.index, y="Diversity", label="Diversity", color="orange", ax=ax2, linestyle='--')
-    # ax2.set_ylabel("Diversity")
-    # plt.title(f"Thread {thread_id} - Best, Avg, Worst Travel Time and Diversity")
-    # plt.xlabel("Generation")
-    # plt.show()
 
 
 if __name__ == "__main__":
