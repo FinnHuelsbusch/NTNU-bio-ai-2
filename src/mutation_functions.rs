@@ -260,7 +260,12 @@ fn insertion_heuristic(
         patient_to_insert.push(target_genome[nurse_index].remove(journey_index));
     }
 
-    for patient_id in patient_to_insert.iter() {
+    inertst_patients_into_genome(genome, problem_instance, &mut target_genome, &mut patient_to_insert)
+   
+}
+
+fn inertst_patients_into_genome(genome: &Genome, problem_instance: &ProblemInstance, target_genome: &mut Genome, patients_to_insert: &mut Vec<usize>) -> Genome {
+    for patient_id in patients_to_insert.iter() {
         let mut min_detour = f64::MAX;
         let mut min_detour_index = usize::MAX;
         let mut nurse_id = usize::MAX;
@@ -278,11 +283,11 @@ fn insertion_heuristic(
                     - problem_instance.travel_time[0][current_journey[0]];
                 if detour < min_detour
                     && validate_journey_if_patient_is_inserted(
-                        current_journey,
-                        *patient_id,
-                        0,
-                        problem_instance,
-                    )
+                    current_journey,
+                    *patient_id,
+                    0,
+                    problem_instance,
+                )
                 {
                     min_detour = detour;
                     min_detour_index = 0;
@@ -296,11 +301,11 @@ fn insertion_heuristic(
                         - problem_instance.travel_time[current_journey[i]][current_journey[i + 1]];
                     if detour < min_detour
                         && validate_journey_if_patient_is_inserted(
-                            current_journey,
-                            *patient_id,
-                            i + 1,
-                            problem_instance,
-                        )
+                        current_journey,
+                        *patient_id,
+                        i + 1,
+                        problem_instance,
+                    )
                     {
                         min_detour = detour;
                         min_detour_index = i + 1;
@@ -314,11 +319,11 @@ fn insertion_heuristic(
                     - problem_instance.travel_time[current_journey[current_journey.len() - 1]][0];
                 if detour < min_detour
                     && validate_journey_if_patient_is_inserted(
-                        current_journey,
-                        *patient_id,
-                        current_journey.len(),
-                        problem_instance,
-                    )
+                    current_journey,
+                    *patient_id,
+                    current_journey.len(),
+                    problem_instance,
+                )
                 {
                     min_detour = detour;
                     min_detour_index = current_journey.len();
@@ -333,8 +338,50 @@ fn insertion_heuristic(
         target_genome[nurse_id].insert(min_detour_index, *patient_id);
     }
 
-    target_genome
+    return target_genome.clone();
 }
+
+fn cut_longest_trip_and_insert(
+    genome: &Genome,
+    problem_instance: &ProblemInstance,
+    _config: &Config,
+) -> Genome {
+    // find longest trip
+    let mut longest_trip = 0.0;
+    let mut longest_trip_nurse = usize::MAX;
+    let mut longest_trip_index = usize::MAX;
+    for (nurse, journey) in genome.iter().enumerate() {
+        if journey.is_empty() {
+            continue;
+        }
+        for i in 0..journey.len() - 1 {
+            let trip_time: f64;
+            if i == 0 {
+                if journey.len() == 1 {
+                    trip_time = problem_instance.travel_time[0][journey[i]] + problem_instance.travel_time[journey[i]][0];
+                }else {
+                    trip_time = problem_instance.travel_time[0][journey[i]] + problem_instance.travel_time[journey[i]][journey[i + 1]];
+                }
+            } else if i == journey.len() - 1 {
+                trip_time = problem_instance.travel_time[journey[i - 1]][journey[i]] + problem_instance.travel_time[journey[i]][0];
+            } else {
+                trip_time = problem_instance.travel_time[journey[i - 1]][journey[i]] + problem_instance.travel_time[journey[i]][journey[i + 1]];
+            }
+            if trip_time > longest_trip {
+                longest_trip = trip_time;
+                longest_trip_nurse = nurse;
+                longest_trip_index = i;
+            }
+        }
+    }
+    // remove longest trip
+    let mut target_genome: Genome = genome.clone();
+    let mut patient: Vec<usize> = vec![target_genome[longest_trip_nurse].remove(longest_trip_index)];
+    // insert patient into genome
+    inertst_patients_into_genome(genome, problem_instance, &mut target_genome, &mut patient)
+}
+    
+
 /*
 fn lin_kernighan(
     genome: &Genome,
@@ -421,7 +468,12 @@ pub fn mutate(
                 "insertionHeuristic" => insertion_heuristic(
                     &children[individual_index].genome,
                     problem_instance,
-                    &mutation_config
+                    mutation_config
+                ),
+                "cutLongestTripAndInsert" => cut_longest_trip_and_insert(
+                    &children[individual_index].genome,
+                    problem_instance,
+                    config,
                 ),
                 /*
                 "linKernighan" => lin_kernighan(

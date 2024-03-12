@@ -52,6 +52,10 @@
       "probability": 0.3,
       "annealing_delta": 0.0001,
       "percentage_to_slice": 0.33
+    }, 
+    {
+      "name": "cutLongestTripAndInsert", 
+      "probability": 0.1
     }
   ],
   "survivor_selection": {
