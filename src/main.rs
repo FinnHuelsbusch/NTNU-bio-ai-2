@@ -2,12 +2,13 @@ use genetic_algorithm::run_genetic_algorithm_instance;
 use log::{ self, LevelFilter };
 use core::num;
 use std::io::{Write};
+use std::sync::{Arc, Mutex};
 
 use crate::config::MetaConfig;
 use crate::{ config::initialize_config, problem_instance::initialize_problem_instance };
 
 use std::{env, thread};
-use crate::genetic_algorithm::{run_genetic_algorithm, Statistics};
+use crate::genetic_algorithm::{run_genetic_algorithm, LeaderBoard, Statistics};
 use crate::individual::Individual;
 
 mod config;
@@ -60,7 +61,9 @@ fn main() {
             for mut config_instance in meta_config.configs {
                 let handle = thread::spawn(move || {
                     // Mute the stdout within the thread
-                    let output  = run_genetic_algorithm_instance(&initialize_problem_instance(&config_instance.problem_instance), &mut config_instance);
+                    let output  = run_genetic_algorithm_instance(&initialize_problem_instance(&config_instance.problem_instance), &mut config_instance, Arc::new(Mutex::new(LeaderBoard {
+                        best_individuals: vec![]
+                    })));
                     (output.0, output.1)
                 });
                 handles.push(handle);

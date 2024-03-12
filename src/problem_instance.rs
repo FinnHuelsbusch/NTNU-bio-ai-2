@@ -55,7 +55,7 @@ where
 
 pub fn should_early_stop(best_fitness: f64, problem_instance: &ProblemInstance) -> bool {
     let five_percent_benchmark = -(problem_instance.benchmark * 1.05).ceil();
-    println!("Five percent  {:?} {:?}",  problem_instance.benchmark,  five_percent_benchmark);
+    println!("Five percent fitness {:?}",  five_percent_benchmark);
     best_fitness >= five_percent_benchmark
 }
 
