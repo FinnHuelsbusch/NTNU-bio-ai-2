@@ -178,6 +178,7 @@ pub fn run_genetic_algorithm_instance(
         let mut leaderboard_mut = leaderboard.lock().unwrap();
         if leaderboard_mut.best_individuals.is_empty() {
             leaderboard_mut.best_individuals.push(population[0].clone());
+            info!("New best individual. Genome: {:?}", population[0].genome);
         }
 
         if

@@ -76,25 +76,28 @@ fn main() {
             for handle in handles {
                 results.push(handle.join().unwrap());
             }
-            println!("Threads finished");
             // sort the results by fitness
             let mut sorted_results: Vec<(Individual, Statistics)> = Vec::with_capacity(number_of_threads);
             for result in results.iter() {
                 sorted_results.push(result.clone());
             }
             sorted_results.sort_unstable_by(|a, b| a.0.fitness.partial_cmp(&b.0.fitness).unwrap());
+            println!("Threads finished. \n\nResults:");
             for result in sorted_results.iter() {
                 let config_index = results.iter().position(|x| x.0.fitness == result.0.fitness).unwrap();
                 println!("Config: {:?} Fitness: {:?}", config_index, result.0.fitness);
             }
             
             output = results[0].clone();
+            
         }
     }
-
     
     // Write output to file
     let json_string = serde_json::to_string(&output).unwrap();
     std::fs::write(output_file, json_string).expect("Unable to write to file");
+    // Log the best individual
+    println!("Best individual: {:?}", output.0);
+    log::info!("Best individual: {:?}", output.0);
     
 }
