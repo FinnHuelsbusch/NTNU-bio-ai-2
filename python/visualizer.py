@@ -435,10 +435,8 @@ if __name__ == "__main__":
     visualizeTripsOnMap(individual.genome, problem_instance)
     plt.savefig(f'./analytics/{training_instance_name}/trips.png')
     # read the log file
-    logfile_data_genome_development = read_log_file_genome_development('./python/statistics_rust.txt')
     logfile_data_individual_statistics = read_log_file_individual_statistics('./python/statistics_rust.txt')
     # visualize the log file
-    keys = list(logfile_data_genome_development.keys())
     for thread_id, thread_data in logfile_data_individual_statistics.items():
         visualize_thread_data(thread_id, thread_data, training_instance_name)
 
