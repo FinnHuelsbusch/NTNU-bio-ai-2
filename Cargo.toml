@@ -14,6 +14,8 @@ log = "0.4.21"
 simple-logging = "2.0.2"
 num_cpus = "1.14.0"
 crossbeam= "0.8.4"
+# only use in linux compile
+[target.'cfg(target_os = "linux")'.dependencies]
 tikv-jemallocator = "0.5"
 
 [profile.release]
