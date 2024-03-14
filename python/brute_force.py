@@ -1,10 +1,17 @@
+import argparse
 import subprocess
 import json
 
-with open('configs/config.json') as f:
+# add command line arguments
+parser = argparse.ArgumentParser(description='Run the genetic algorithm in a brute force manner.')
+parser.add_argument('--config-path', type=str, help='Path to the config file.', default='configs/config.json')
+parser.add_argument('--start-index', type=int, help='Start index for the log files.', default=0)
+arguments = parser.parse_args()
+
+with open(arguments.config_path) as f:
     config = json.load(f)
 
-for i in range(300):
+for i in range(arguments.start_index, 300):
     # change log file
     config['log_file'] = "./logs/"+config['problem_instance'].split("/")[-1]+ '_' + str(i)
     # change early stopping
