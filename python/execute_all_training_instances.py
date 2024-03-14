@@ -9,8 +9,9 @@ with open('configs/config.json') as f:
     for filename in os.listdir('train'):
         if filename.endswith(".json"):
             # replace   "problem_instance":  in config with "problem_instance": "./train/"+filename,
-            config['problem_instance'] = "./train/"+filename+".log"
-            config['log_file'] = "./logs/"+filename
+            config['problem_instance'] = "./train/"+filename
+            config['log_file'] = "./logs/"+filename+".log"
+            config['output_file'] = "./outputs/"+filename
             config['early_stopping'] = True
 
             # write the new config to a file

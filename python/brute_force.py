@@ -14,6 +14,8 @@ with open(arguments.config_path) as f:
 for i in range(arguments.start_index, 300):
     # change log file
     config['log_file'] = "./logs/"+config['problem_instance'].split("/")[-1]+ '_' + str(i)
+    config['output_file'] = "./output/"+config['problem_instance'].split("/")[-1]+ '_' + str(i)
+
     # change early stopping
     config['early_stopping'] = False
     # write the new config to a file
