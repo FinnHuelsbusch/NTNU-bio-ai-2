@@ -392,9 +392,11 @@ def write_ouput_file(problem_instance, individual, training_instance_name):
                 if j == 0:
                         route_duration += problem_instance.travelTime[0][trip[j]]
                         patient_sequence += f'Patient{trip[j]}({round(route_duration, 2)}-{round(route_duration+problem_instance.patients[trip[j]].careTime)})[{problem_instance.patients[trip[j]].startTime}-{problem_instance.patients[trip[j]].endTime}] -> '
+                        route_duration += problem_instance.patients[trip[j]].careTime
                 else:
                         route_duration += problem_instance.travelTime[trip[j-1]][trip[j]]
                         patient_sequence += f'Patient{trip[j]}({round(route_duration, 2)}-{round(route_duration+problem_instance.patients[trip[j]].careTime)})[{problem_instance.patients[trip[j]].startTime}-{problem_instance.patients[trip[j]].endTime}] -> '
+                        route_duration += problem_instance.patients[trip[j]].careTime
                 covered_demand += problem_instance.patients[trip[j]].demand
             if len(trip) > 0:
                 route_duration += problem_instance.travelTime[trip[-1]][0]
